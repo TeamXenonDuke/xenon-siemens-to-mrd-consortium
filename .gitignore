@@ -170,3 +170,6 @@ cython_debug/
 # tmp files
 tmp/*
 !tmp/.gitkeep
+
+# OS generated files
+.DS_Store

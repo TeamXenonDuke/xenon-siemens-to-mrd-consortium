@@ -123,12 +123,12 @@ def get_center_freq(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
         center frequency in Hz.
     """
     try:
-        return twix_obj.hdr.Meas.lFrequency
+        return int(twix_obj.hdr.Dicom["lFrequency"])
     except:
         pass
 
     try:
-        return int(twix_obj.hdr.Dicom["lFrequency"])
+        return twix_obj.hdr.Meas.lFrequency
     except:
         pass
 

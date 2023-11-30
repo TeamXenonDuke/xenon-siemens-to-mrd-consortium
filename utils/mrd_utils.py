@@ -37,6 +37,7 @@ def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str):
 
     # write scan-specific header variables
     if scan_type == "calibration":
+        _write_ramp_time(ismrmrd_header, data_dict[constants.IOFields.RAMP_TIME])
         _write_tr(
             ismrmrd_header,
             [

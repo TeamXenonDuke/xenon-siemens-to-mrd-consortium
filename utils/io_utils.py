@@ -216,6 +216,7 @@ def read_dyn_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.N_POINTS: data_dict[constants.IOFields.FIDS].shape[1],
         constants.IOFields.ORIENTATION: twix_utils.get_orientation(twix_obj),
         constants.IOFields.PROTOCOL_NAME: twix_utils.get_protocol_name(twix_obj),
+        constants.IOFields.RAMP_TIME: twix_utils.get_ramp_time(twix_obj),
         constants.IOFields.REMOVEOS: twix_utils.get_flag_removeOS(twix_obj),
         constants.IOFields.SCAN_DATE: twix_utils.get_scan_date(twix_obj),
         constants.IOFields.SYSTEM_VENDOR: twix_utils.get_system_vendor(twix_obj),

@@ -392,7 +392,7 @@ def get_dyn_data(
         TODO
     """
     # get raw FIDs
-    raw_fids = twix_obj.image[""].astype(np.cdouble)
+    raw_fids = np.transpose(twix_obj.image[""].astype(np.cdouble))
 
     # get contrast labels, hard code for now until we fiure out how to read this from twix file
     num_calibration_gas_fids = 20

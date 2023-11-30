@@ -200,6 +200,9 @@ def read_dyn_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.CONTRAST_LABELS: data_dict[
             constants.IOFields.CONTRAST_LABELS
         ],
+        constants.IOFields.BONUS_SPECTRA_LABELS: data_dict[
+            constants.IOFields.BONUS_SPECTRA_LABELS
+        ],
         constants.IOFields.SAMPLE_TIME: twix_utils.get_dwell_time(twix_obj),
         constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj),
         constants.IOFields.FA_GAS: twix_utils.get_flipangle_gas(twix_obj),
@@ -245,6 +248,9 @@ def read_dis_twix(path: str) -> Dict[str, Any]:
     return {
         constants.IOFields.CONTRAST_LABELS: data_dict[
             constants.IOFields.CONTRAST_LABELS
+        ],
+        constants.IOFields.BONUS_SPECTRA_LABELS: data_dict[
+            constants.IOFields.BONUS_SPECTRA_LABELS
         ],
         constants.IOFields.SAMPLE_TIME: twix_utils.get_dwell_time(twix_obj),
         constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj),
@@ -307,6 +313,9 @@ def read_ute_twix(path: str) -> Dict[str, Any]:
     return {
         constants.IOFields.CONTRAST_LABELS: data_dict[
             constants.IOFields.CONTRAST_LABELS
+        ],
+        constants.IOFields.BONUS_SPECTRA_LABELS: data_dict[
+            constants.IOFields.BONUS_SPECTRA_LABELS
         ],
         constants.IOFields.SAMPLE_TIME: twix_utils.get_dwell_time(twix_obj),
         constants.IOFields.FA_PROTON: twix_utils.get_flipangle_proton(twix_obj),

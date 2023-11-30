@@ -25,6 +25,7 @@ class IOFields(object):
 
     BANDWIDTH = "bandwidth"
     BIASFIELD_KEY = "biasfield_key"
+    BONUS_SPECTRA_LABELS = "bonus_spectra_labels"
     CONTRAST_LABELS = "contrast_labels"
     SAMPLE_TIME = "sample_time"
     FA_PROTON = "fa_proton"
@@ -138,3 +139,10 @@ class ContrastLabels(object):
     PROTON = 0  # proton acquisition
     GAS = 1  # gas phase 129Xe acquisition
     DISSOLVED = 2  # dissolved phase 129Xe acquisition
+
+
+class BonusSpectraLabels(object):
+    """Numbers for labelling if FID acquisition is part of bonus spectra."""
+
+    NOT_BONUS = 0  # not part of bonus spectra
+    BONUS = 1  # part of bonus spectra

@@ -400,9 +400,15 @@ def get_dyn_data(
     contrast_labels[:-num_calibration_gas_fids] = constants.ContrastLabels.DISSOLVED
     contrast_labels[-num_calibration_gas_fids:] = constants.ContrastLabels.GAS
 
+    # get bonus spectra labels
+    bonus_spectra_labels = (
+        np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
+    )
+
     return {
         constants.IOFields.FIDS: raw_fids,
         constants.IOFields.CONTRAST_LABELS: contrast_labels,
+        constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: raw_fids.shape[0],
         constants.IOFields.N_POINTS: raw_fids.shape[1],
     }
@@ -447,6 +453,9 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
     flip_angle_dissolved = get_flipangle_dissolved(twix_obj)
     contrast_labels = np.zeros(raw_fids.shape[0])
+    bonus_spectra_labels = (
+        np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
+    )
 
     # get the scan date
     scan_date = get_scan_date(twix_obj=twix_obj)
@@ -480,6 +489,9 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
             contrast_labels[-20:] = constants.ContrastLabels.GAS
             contrast_labels[-30:-20] = constants.ContrastLabels.DISSOLVED
 
+            # set bonus spectra labels
+            bonus_spectra_labels[-30:] = constants.BonusSpectraLabels.BONUS
+
             # extract gas and dissolved phase fids (minus bonus spectra)
             data_gas = raw_fids[:-30][
                 contrast_labels[:-30] == constants.ContrastLabels.GAS
@@ -503,6 +515,9 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
             contrast_labels[-20:] = constants.ContrastLabels.GAS
             contrast_labels[-30:-20] = constants.ContrastLabels.DISSOLVED
 
+            # set bonus spectra labels
+            bonus_spectra_labels[-30:] = constants.BonusSpectraLabels.BONUS
+
             # extract gas and dissolved phase fids (minus bonus spectra)
             data_gas = raw_fids[:-30][
                 contrast_labels[:-30] == constants.ContrastLabels.GAS
@@ -525,6 +540,9 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
             contrast_labels[1:-30:2] = constants.ContrastLabels.DISSOLVED
             contrast_labels[-20:] = constants.ContrastLabels.GAS
             contrast_labels[-30:-20] = constants.ContrastLabels.DISSOLVED
+
+            # set bonus spectra labels
+            bonus_spectra_labels[-30:] = constants.BonusSpectraLabels.BONUS
 
             # extract gas and dissolved phase fids (minus bonus spectra)
             data_gas = raw_fids[:-30][
@@ -610,6 +628,7 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
         constants.IOFields.FIDS_GAS: data_gas,
         constants.IOFields.FIDS_DIS: data_dis,
         constants.IOFields.CONTRAST_LABELS: contrast_labels,
+        constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: n_frames,
         constants.IOFields.GRAD_DELAY_X: grad_delay_x,
         constants.IOFields.GRAD_DELAY_Y: grad_delay_y,
@@ -652,8 +671,14 @@ def get_ute_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     # generate contrast labels
     contrast_labels = np.zeros(raw_fids.shape[0])
 
+    # get bonus spectra labels
+    bonus_spectra_labels = (
+        np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
+    )
+
     return {
         constants.IOFields.CONTRAST_LABELS: contrast_labels,
+        constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.FIDS: raw_fids,
         constants.IOFields.N_FRAMES: nframes,
         constants.IOFields.GRAD_DELAY_X: -5,

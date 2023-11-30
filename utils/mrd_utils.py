@@ -120,6 +120,9 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         acquisition_header.idx.contrast = int(
             data_dict[constants.IOFields.CONTRAST_LABELS][acquisition_num]
         )
+        acquisition_header.measurement_uid = int(
+            data_dict[constants.IOFields.BONUS_SPECTRA_LABELS][acquisition_num]
+        )
 
         # set acquisition shape and hard code required acquisition fields
         acquisition.resize(data_dict[constants.IOFields.N_POINTS], 1)

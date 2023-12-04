@@ -248,14 +248,14 @@ def get_FOV(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
 
 
 def get_TE(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
-    """Get the te in seconds.
+    """Get the te in ms.
 
     Args:
         twix_obj: twix object returned from mapVBVD function.
     Returns:
-        te in seconds
+        te in ms
     """
-    return twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-6
+    return twix_obj.hdr.Phoenix[("alTE", "0")]
 
 
 def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict) -> float:

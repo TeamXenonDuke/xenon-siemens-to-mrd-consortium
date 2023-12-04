@@ -76,12 +76,12 @@ def get_TR(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
         TR in  ms
     """
     try:
-        return float(twix_obj.hdr.Config.TR.split(" ")[0])
+        return float(twix_obj.hdr.Config.TR.split(" ")[0]) * 1e-3
     except:
         pass
 
     try:
-        return float(twix_obj.hdr.Phoenix[("alTR", "0")])
+        return float(twix_obj.hdr.Phoenix[("alTR", "0")]) * 1e-3
     except:
         pass
 
@@ -101,11 +101,11 @@ def get_TR_dissolved(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
         TR in seconds
     """
     try:
-        return 2 * float(twix_obj.hdr.Config.TR) * 1e-6
+        return 2 * float(twix_obj.hdr.Config.TR) * 1e-3
     except:
         pass
     try:
-        return 2 * int(twix_obj.hdr.Config.TR.split(" ")[0]) * 1e-6
+        return 2 * int(twix_obj.hdr.Config.TR.split(" ")[0]) * 1e-3
     except:
         pass
 
@@ -255,7 +255,7 @@ def get_TE(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     Returns:
         te in ms
     """
-    return twix_obj.hdr.Phoenix[("alTE", "0")]
+    return twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3
 
 
 def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict) -> float:

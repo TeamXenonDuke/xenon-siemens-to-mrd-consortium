@@ -1,6 +1,6 @@
 # xe-siemens-to-mrd
 
-A tool for converting standard 129Xe MRI scans from Siemens twix files to ISMRMRD files. ISMRMRD files are formatted according to the 129Xe MRI clinical trials consortium specifications: https://docs.google.com/spreadsheets/d/1SeG4K4VgA1DUrTBhSjgeSqu3UCGiCWaLG3wqHg6hBh8/edit?pli=1#gid=1645123828
+A tool for converting standard 129Xe MRI scans from Siemens twix files to ISMRMRD files. ISMRMRD files are formatted according to the 129Xe MRI clinical trials consortium specifications: https://docs.google.com/spreadsheets/d/1SeG4K4VgA1DUrTBhSjgeSqu3UCGiCWaLG3wqHg6hBh8/edit?usp=sharing
 
 ## Table of contents:
 

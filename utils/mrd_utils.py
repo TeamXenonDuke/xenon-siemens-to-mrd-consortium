@@ -52,9 +52,11 @@ def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str):
                 data_dict[constants.IOFields.FA_DIS],
             ],
         )
-        _write_freq_center(ismrmrd_header, data_dict[constants.IOFields.FREQ_CENTER])
+        _write_freq_center(
+            ismrmrd_header, data_dict[constants.IOFields.XE_CENTER_FREQUENCY]
+        )
         _write_freq_excitation(
-            ismrmrd_header, data_dict[constants.IOFields.FREQ_EXCITATION]
+            ismrmrd_header, data_dict[constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY]
         )
     elif scan_type == "proton":
         _write_ramp_time(ismrmrd_header, data_dict[constants.IOFields.RAMP_TIME])
@@ -86,9 +88,11 @@ def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str):
             ],
         )
         _write_orientation(ismrmrd_header, data_dict[constants.IOFields.ORIENTATION])
-        _write_freq_center(ismrmrd_header, data_dict[constants.IOFields.FREQ_CENTER])
+        _write_freq_center(
+            ismrmrd_header, data_dict[constants.IOFields.XE_CENTER_FREQUENCY]
+        )
         _write_freq_excitation(
-            ismrmrd_header, data_dict[constants.IOFields.FREQ_EXCITATION]
+            ismrmrd_header, data_dict[constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY]
         )
 
     return ismrmrd_header
@@ -377,7 +381,9 @@ def _write_freq_center(
     if type(ismrmrd_header.userParameters) == type(None):
         ismrmrd_header.userParameters = ismrmrd.xsd.userParametersType()
 
-    freq_center_obj = ismrmrd.xsd.userParameterLongType(constants.IOFields.FREQ_CENTER)
+    freq_center_obj = ismrmrd.xsd.userParameterLongType(
+        constants.IOFields.XE_CENTER_FREQUENCY
+    )
     freq_center_obj.value = freq_center
     ismrmrd_header.userParameters.userParameterLong.insert(0, freq_center_obj)
 
@@ -396,7 +402,7 @@ def _write_freq_excitation(
         ismrmrd_header.userParameters = ismrmrd.xsd.userParametersType()
 
     freq_excitation_obj = ismrmrd.xsd.userParameterLongType(
-        constants.IOFields.FREQ_EXCITATION
+        constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY
     )
     freq_excitation_obj.value = freq_excitation
     ismrmrd_header.userParameters.userParameterLong.insert(1, freq_excitation_obj)

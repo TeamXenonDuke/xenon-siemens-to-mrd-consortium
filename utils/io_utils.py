@@ -209,8 +209,10 @@ def read_dyn_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.FIELD_STRENGTH: twix_utils.get_field_strength(twix_obj),
         constants.IOFields.FIDS: data_dict[constants.IOFields.FIDS],
         constants.IOFields.FOV: twix_utils.get_FOV(twix_obj),
-        constants.IOFields.FREQ_CENTER: twix_utils.get_center_freq(twix_obj),
-        constants.IOFields.FREQ_EXCITATION: twix_utils.get_excitation_freq(twix_obj),
+        constants.IOFields.XE_CENTER_FREQUENCY: twix_utils.get_center_freq(twix_obj),
+        constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY: twix_utils.get_excitation_freq(
+            twix_obj
+        ),
         constants.IOFields.INSTITUTION: twix_utils.get_institution(twix_obj),
         constants.IOFields.N_FRAMES: data_dict[constants.IOFields.N_FRAMES],
         constants.IOFields.N_POINTS: data_dict[constants.IOFields.FIDS].shape[1],
@@ -261,8 +263,10 @@ def read_dis_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.FIDS_DIS: data_dict[constants.IOFields.FIDS_DIS],
         constants.IOFields.FIDS_GAS: data_dict[constants.IOFields.FIDS_GAS],
         constants.IOFields.FOV: twix_utils.get_FOV(twix_obj),
-        constants.IOFields.FREQ_CENTER: twix_utils.get_center_freq(twix_obj),
-        constants.IOFields.FREQ_EXCITATION: twix_utils.get_excitation_freq(twix_obj),
+        constants.IOFields.XE_CENTER_FREQUENCY: twix_utils.get_center_freq(twix_obj),
+        constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY: twix_utils.get_excitation_freq(
+            twix_obj
+        ),
         constants.IOFields.GRAD_DELAY_X: data_dict[constants.IOFields.GRAD_DELAY_X],
         constants.IOFields.GRAD_DELAY_Y: data_dict[constants.IOFields.GRAD_DELAY_Y],
         constants.IOFields.GRAD_DELAY_Z: data_dict[constants.IOFields.GRAD_DELAY_Z],
@@ -323,8 +327,10 @@ def read_ute_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.FIELD_STRENGTH: twix_utils.get_field_strength(twix_obj),
         constants.IOFields.FIDS: data_dict[constants.IOFields.FIDS],
         constants.IOFields.FOV: twix_utils.get_FOV(twix_obj),
-        constants.IOFields.FREQ_CENTER: twix_utils.get_center_freq(twix_obj),
-        constants.IOFields.FREQ_EXCITATION: twix_utils.get_excitation_freq(twix_obj),
+        constants.IOFields.XE_CENTER_FREQUENCY: twix_utils.get_center_freq(twix_obj),
+        constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY: twix_utils.get_excitation_freq(
+            twix_obj
+        ),
         constants.IOFields.GRAD_DELAY_X: data_dict[constants.IOFields.GRAD_DELAY_X],
         constants.IOFields.GRAD_DELAY_Y: data_dict[constants.IOFields.GRAD_DELAY_Y],
         constants.IOFields.GRAD_DELAY_Z: data_dict[constants.IOFields.GRAD_DELAY_Z],

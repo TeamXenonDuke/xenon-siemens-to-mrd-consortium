@@ -16,8 +16,8 @@ def remove_contamination(dict_dyn: Dict[str, Any], dict_dis: Dict[str, Any]) -> 
         fid=dict_dyn[constants.IOFields.FIDS_DIS],
         sample_time=dict_dyn[constants.IOFields.SAMPLE_TIME],
         tr=dict_dyn[constants.IOFields.TR],
-        center_freq=dict_dyn[constants.IOFields.FREQ_CENTER],
-        rf_excitation=dict_dyn[constants.IOFields.FREQ_EXCITATION],
+        center_freq=dict_dyn[constants.IOFields.XE_CENTER_FREQUENCY],
+        rf_excitation=dict_dyn[constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY],
     )
 
     dict_dis[constants.IOFields.FIDS_DIS] = signal_utils.remove_gasphase_contamination(

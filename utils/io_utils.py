@@ -349,16 +349,6 @@ def read_ute_twix(path: str) -> Dict[str, Any]:
     }
 
 
-def export_subject_mat(subject: object, path: str):
-    """Export select subject instance variables to mat file.
-
-    Args:
-        subject: subject instance
-        path: str file path of mat file
-    """
-    sio.savemat(path, vars(subject))
-
-
 def export_np(arr: np.ndarray, path: str):
     """Export numpy array to npy file.
 
@@ -392,28 +382,22 @@ def write_mrd_file(path: str, data_dict: Dict[str, Any], scan_type: str):
     ismrmrd_data_set.close()
 
 
-def export_subject_csv(dict_stats: Dict[str, Any], path: str, overwrite=False):
-    """Export statistics to running csv file.
+def move_files(source_paths: list, destination_path: str) -> None:
+    """Move files to a new directory.
 
-    Uses the csv.DictWriter class to write a csv file. First, checks if the csv
-    file exists and the header has been written. If not, writes the header. Then,
-    writes to a new file or new row of data in existing file.
-
+    If target directory does not exist, it is created.
     Args:
-        dict_stats (dict): dictionary containing statistics to be exported
-        path (str): file path of csv file
-        overwrite (bool): if True, overwrite existing csv file
+        source_paths (list): list of paths of files to move
+        destination_path (str): path to move files to
     """
-    header = dict_stats.keys()
-    if overwrite or (not os.path.exists(path)):
-        with open(path, "w", newline="") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=header)
-            writer.writeheader()
-            writer.writerow(dict_stats)
-    else:
-        with open(path, "a", newline="") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=header)
-            writer.writerow(dict_stats)
+    # if target directory doesn't exist, create it
+    if not os.path.exists(destination_path):
+        os.makedirs(destination_path)
+    # move files to target directory
+    for path in source_paths:
+        fname = os.path.basename(path)
+        if os.path.isfile(path):
+            shutil.move(path, os.path.join(destination_path, fname))
 
 
 def export_config_to_json(config: config_dict, path: str) -> None:

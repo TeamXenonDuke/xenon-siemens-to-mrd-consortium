@@ -22,6 +22,7 @@ def siemens_to_mrd(config: base_config.Config):
     subject.read_twix_files()
     subject.get_trajectories()
     subject.write_all_mrd_files()
+    subject.move_output_files()
 
 
 def main(argv):

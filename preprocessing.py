@@ -32,10 +32,10 @@ def remove_contamination(dict_dyn: Dict[str, Any], dict_dis: Dict[str, Any]) -> 
     return dict_dis
 
 
-def prepare_data_and_traj(
+def prepare_traj(
     data_dict: Dict[str, Any], generate_traj: bool = True
 ) -> Tuple[np.ndarray, ...]:
-    """Prepare data and trajectory data reconstruction.
+    """Prepare k space trajectory for reconstruction.
 
     Uses a trajectory generated from the metadata in the twix file if generate_traj is
     True. Otherwise, it uses a manually imported trajectory. Then, it removes noise.
@@ -74,9 +74,9 @@ def prepare_traj_interleaved(
     True. Otherwise, it uses a manually imported trajectory.
 
     Args:
-        data_dict: dictionary containing data and metadata extracted from the twix file.
+        data_dict (dict): dictionary containing data and metadata extracted from the twix file.
                     Optionally also contains trajectories.
-        generate_traj: bool flag to generate trajectory from metadata in twix file.
+        generate_traj (bool): bool flag to generate trajectory from metadata in twix file.
 
     Returns:
         traj (np.array): interleaved gas and dissolved-phase trajectories

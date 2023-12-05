@@ -80,12 +80,7 @@ class Subject(object):
             self.dict_dis[constants.IOFields.TRAJ] = traj
 
         if bool(self.dict_proton):
-            traj = pp.prepare_data_and_traj(self.dict_proton)
-            traj_scaling_factor = traj_utils.get_scaling_factor(
-                recon_size=int(self.config.recon.recon_size),
-                n_points=self.dict_proton[constants.IOFields.N_POINTS],
-                scale=True,
-            )
+            traj = pp.prepare_traj(self.dict_proton)
             traj *= traj_scaling_factor
             self.dict_proton[constants.IOFields.TRAJ] = traj
 
@@ -113,3 +108,8 @@ class Subject(object):
                 data_dict=self.dict_proton,
                 scan_type="proton",
             )
+
+    def move_output_files(self):
+        """Move output files into dedicated directory."""
+        output_files = glob.glob("tmp/*.h5")
+        io_utils.move_files(output_files, self.config.data_dir)

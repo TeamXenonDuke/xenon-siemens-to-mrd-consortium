@@ -67,6 +67,7 @@ def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str):
             ismrmrd_header,
             [data_dict[constants.IOFields.FA_PROTON]],
         )
+        _write_orientation(ismrmrd_header, data_dict[constants.IOFields.ORIENTATION])
     elif scan_type == "dixon":
         _write_ramp_time(ismrmrd_header, data_dict[constants.IOFields.RAMP_TIME])
         _write_matrix_size(ismrmrd_header, data_dict[constants.IOFields.N_POINTS])
@@ -84,6 +85,7 @@ def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str):
                 data_dict[constants.IOFields.FA_DIS],
             ],
         )
+        _write_orientation(ismrmrd_header, data_dict[constants.IOFields.ORIENTATION])
         _write_freq_center(ismrmrd_header, data_dict[constants.IOFields.FREQ_CENTER])
         _write_freq_excitation(
             ismrmrd_header, data_dict[constants.IOFields.FREQ_EXCITATION]
@@ -400,13 +402,21 @@ def _write_freq_excitation(
     ismrmrd_header.userParameters.userParameterLong.insert(1, freq_excitation_obj)
 
 
-def _write_raw_fid(acquisition: ismrmrd.acquisition.Acquisition, fid: np.ndarray):
-    """Write raw FIDs to Acquisition.
+def _write_orientation(
+    ismrmrd_header: ismrmrd.xsd.ismrmrdschema.ismrmrd.ismrmrdHeader,
+    orientation: str,
+):
+    """Write orientation to ismrmrdHeader.
 
     Args:
-        acquisition (Acquisition): Acquisition
-        fid (np.array): raw FIDs of shape (number of points in ray,)
+        ismrmrd_header (ismrmrdHeader): ismrmrdHeader
+        orientation (str): orientation of reconstructed image
     """
+    if type(ismrmrd_header.userParameters) == type(None):
+        ismrmrd_header.userParameters = ismrmrd.xsd.userParametersType()
 
-    acquisition.resize(fid.shape)
-    acquisition.data = fid
+    orientation_obj = ismrmrd.xsd.userParameterStringType(
+        constants.IOFields.ORIENTATION
+    )
+    orientation_obj.value = orientation
+    ismrmrd_header.userParameters.userParameterString.insert(0, orientation_obj)

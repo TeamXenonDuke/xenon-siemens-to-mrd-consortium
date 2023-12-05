@@ -23,7 +23,7 @@ class Config(base_config.Config):
         """Initialize config parameters."""
         super().__init__()
         self.data_dir = "007-005B"
-        self.subject_id = "/Users/aribechtel/Documents/Mirror/patients/007-005B/test"
+        self.subject_id = "/Users/My_Name/Documents/patients/007-005B/"
 
 
 def get_config() -> config_dict.ConfigDict:

@@ -93,7 +93,7 @@ All subject information and scan parameters are specified in a subject-specific 
 
 ### 2.2 Processing twix files
 
-When a configuration file is processed, the pipeline will search for calibration, proton, and Dixon twix files in `data_dir` and convert any existing files to MRD format.
+When a configuration file is processed, the pipeline will search for calibration, proton, and Dixon twix files in `data_dir` and convert any existing files to MRD format. MRD files are output to `data_dir`.
 
 To process a configuration file, navigate to the main directory of this repository in terminal and excute the following command:
 

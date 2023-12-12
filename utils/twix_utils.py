@@ -21,8 +21,12 @@ def get_scan_date(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     Returns:
         scan date string in MM-DD-YYYY format
     """
-    tReferenceImage0 = str(twix_obj.hdr.MeasYaps[("tReferenceImage0",)]).strip('"')
-    scan_date = tReferenceImage0.split(".")[-1][:8]
+    try:
+        tReferenceImage0 = str(twix_obj.hdr.MeasYaps[("tReferenceImage0",)]).strip('"')
+        scan_date = tReferenceImage0.split(".")[-1][:8]
+    except:
+        SeriesLOID = twix_obj.hdr.Config[("SeriesLOID")]
+        scan_date = SeriesLOID.split(".")[-4][:8]
     return scan_date[:4] + "-" + scan_date[4:6] + "-" + scan_date[6:]
 
 

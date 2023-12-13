@@ -21,15 +21,15 @@ First step of the setup process is to install python. This pipeline works with P
 To create a virtual environment using `conda` execute the command in the terminal:
 
 ```bash
-conda create --name XeGas python=3.8.8
+conda create --name XeMrd python=3.8.8
 ```
 
-Here, XeGas is the the given name, but any name can be given.
+Here, XeMrd is the the given name, but any name can be given.
 
 To activate the environment, execute the command
 
 ```bash
-conda activate XeGas
+conda activate XeMrd
 ```
 
 ### 1.3 Install required packages

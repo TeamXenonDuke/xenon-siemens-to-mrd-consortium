@@ -93,9 +93,15 @@ All subject information and scan parameters are specified in a subject-specific 
 
 ### 2.2 Processing twix files
 
-When a configuration file is processed, the pipeline will search for calibration, proton, and Dixon twix files in `data_dir` and convert any existing files to MRD format. MRD files are output to `data_dir`.
+First, copy one of the demo config files or the base_config file, rename it, and modify configuration settings. When a configuration file is processed, the pipeline will search for calibration, proton, and Dixon twix files in `data_dir` and convert any existing files to MRD format. MRD files are output to `data_dir`.
 
-To process a configuration file, navigate to the main directory of this repository in terminal and excute the following command:
+In terminal, navigate to the main pipeline directory and activate the virtual environment you set up earlier:
+
+```bash
+conda activate XeGas
+```
+
+To process the configuration file, excute the following command:
 
 ```bash
 python main.py --config [path-to-config-file]

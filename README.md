@@ -98,7 +98,7 @@ First, copy one of the demo config files or the base_config file, rename it, and
 In terminal, navigate to the main pipeline directory and activate the virtual environment you set up earlier:
 
 ```bash
-conda activate XeGas
+conda activate XeMrd
 ```
 
 To process the configuration file, excute the following command:

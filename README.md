@@ -93,7 +93,7 @@ All subject information and scan parameters are specified in a subject-specific 
 
 ### 2.2 Processing twix files
 
-First, copy one of the demo config files or the base_config file, rename it, and modify configuration settings. When a configuration file is processed, the pipeline will search for calibration, proton, and Dixon twix files in `data_dir` and convert any existing files to MRD format. MRD files are output to `data_dir`.
+First, copy the demo config file, rename it, and modify configuration settings. When a configuration file is processed, the pipeline will search for calibration, proton, and Dixon twix files in `data_dir` and convert any existing files to MRD format. MRD files are output to `data_dir`.
 
 In terminal, navigate to the main pipeline directory and activate the virtual environment you set up earlier:
 

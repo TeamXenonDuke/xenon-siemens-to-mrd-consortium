@@ -22,8 +22,24 @@ class Config(base_config.Config):
     def __init__(self):
         """Initialize config parameters."""
         super().__init__()
-        self.data_dir = "007-005B"
-        self.subject_id = "/Users/My_Name/Documents/patients/007-005B/"
+        self.data_dir = "/Users/MyName/Documents/patients/007-005B/"
+        self.subject_id = "007-005B"
+        self.recon = Recon()
+
+
+class Recon(object):
+    """Define dixon and proton image reconstruction configurations.
+
+    Attributes:
+        recon_size (int)
+        matrix_size (int)
+    """
+
+    def __init__(self):
+        """Initialize the reconstruction parameters."""
+        super().__init__()
+        self.recon_size = 64
+        self.matrix_size = 128
 
 
 def get_config() -> config_dict.ConfigDict:

@@ -24,7 +24,6 @@ class Subject(object):
 
     def __init__(self, config: base_config.Config):
         """Init object."""
-        logging.info("Initializing gas exchange imaging subject.")
         self.config = config
         self.dict_dis = {}
         self.dict_dyn = {}
@@ -32,7 +31,7 @@ class Subject(object):
 
     def read_twix_files(self):
         """Read in twix files to dictionary, if they exist."""
-
+        logging.info("Reading twix files.")
         try:
             self.dict_dis = io_utils.read_dis_twix(
                 io_utils.get_dis_twix_files(str(self.config.data_dir))
@@ -65,6 +64,7 @@ class Subject(object):
 
         Also, calculates the scaling factor for the trajectory.
         """
+        logging.info("Getting trajectories.")
         if bool(self.dict_dis):
             traj = pp.prepare_traj_interleaved(
                 self.dict_dis,
@@ -86,7 +86,7 @@ class Subject(object):
 
     def write_all_mrd_files(self):
         """Write MRD files."""
-
+        logging.info("Writing MRD files.")
         if bool(self.dict_dis):
             io_utils.write_mrd_file(
                 path=os.path.join("tmp", "{}_dixon.h5".format(self.config.subject_id)),
@@ -111,5 +111,6 @@ class Subject(object):
 
     def move_output_files(self):
         """Move output files into dedicated directory."""
+        logging.info("Moving output files to subject directory.")
         output_files = glob.glob("tmp/*.h5")
         io_utils.move_files(output_files, self.config.data_dir)

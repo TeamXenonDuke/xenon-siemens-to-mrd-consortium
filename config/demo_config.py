@@ -27,7 +27,7 @@ class Config(base_config.Config):
         self.recon = Recon()
 
 
-class Recon(object):
+class Recon(base_config.Recon):
     """Define dixon and proton image reconstruction configurations.
 
     Attributes:

@@ -23,6 +23,7 @@ def siemens_to_mrd(config: base_config.Config):
     subject.get_trajectories()
     subject.write_all_mrd_files()
     subject.move_output_files()
+    logging.info("Program complete")
 
 
 def main(argv):

@@ -281,8 +281,8 @@ def read_dis_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.SYSTEM_VENDOR: twix_utils.get_system_vendor(twix_obj),
         constants.IOFields.SOFTWARE_VERSION: twix_utils.get_software_version(twix_obj),
         constants.IOFields.TE: twix_utils.get_TE(twix_obj),
-        constants.IOFields.TR_GAS: twix_utils.get_TR_dissolved(twix_obj) * 2,
-        constants.IOFields.TR_DIS: twix_utils.get_TR_dissolved(twix_obj) * 2,
+        constants.IOFields.TR_GAS: twix_utils.get_TR_dissolved(twix_obj),
+        constants.IOFields.TR_DIS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.BANDWIDTH: twix_utils.get_bandwidth(
             twix_obj, data_dict, filename
         ),

@@ -127,6 +127,7 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         acquisition_header.idx.contrast = int(
             data_dict[constants.IOFields.CONTRAST_LABELS][acquisition_num]
         )
+        acquisition_header.idx.set = int(data_dict[constants.IOFields.SET_LABELS][acquisition_num])
         acquisition_header.measurement_uid = int(
             data_dict[constants.IOFields.BONUS_SPECTRA_LABELS][acquisition_num]
         )
@@ -157,6 +158,7 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         ismrmrd_data_set.append_acquisition(acquisition)
 
     return ismrmrd_data_set
+
 
 
 def _write_scan_date(

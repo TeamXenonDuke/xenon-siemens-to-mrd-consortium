@@ -673,16 +673,6 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
     YYYY, MM, DD = scan_date.split("-")
     scan_datetime = datetime.datetime(int(YYYY), int(MM), int(DD))
 
-    logging.info("@@@@@@@@@@@@@@@@@@@@@@")    
-    logging.info(flip_angle_dissolved)
-
-    flip_angle_gas = get_flipangle_gas(twix_obj)
-    logging.info("@@@@@@@@@@@@@@@@@@@@@@")    
-    logging.info(flip_angle_gas)
-
-    # Hard code 
-    flip_angle_dissolved = 20;
-    flip_angle_gas =0.5;
 
     logging.info(get_TE(twix_obj,True))    
     
@@ -694,8 +684,6 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
         if raw_fids.shape[0] == 4830 or raw_fids.shape[0] == 4030:
 
 
-                logging.info("Reading in LUMC. Addset 3 4")
-                logging.info(contrast_labels.shape)
                 # set bonus spectra labels
 
                 number_of_echo = 2;

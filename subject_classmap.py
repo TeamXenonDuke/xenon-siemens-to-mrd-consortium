@@ -32,13 +32,13 @@ class Subject(object):
     def read_twix_files(self):
         """Read in twix files to dictionary, if they exist."""
         logging.info("Reading twix files.")
-        try:
-            self.dict_dis = io_utils.read_dis_twix(
-                io_utils.get_dis_twix_files(str(self.config.data_dir))
-            )
-            self.dict_dis[constants.IOFields.SUBJECT_ID] = self.config.subject_id
-        except:
-            logging.info("Could not find/read Dixon file.")
+        #try:
+        self.dict_dis = io_utils.read_dis_twix(
+            io_utils.get_dis_twix_files(str(self.config.data_dir)), self.config.multi_echo
+        )
+        self.dict_dis[constants.IOFields.SUBJECT_ID] = self.config.subject_id
+        #except:
+        #    logging.info("Could not find/read Dixon file.")
 
         try:
             self.dict_dyn = io_utils.read_dyn_twix(
@@ -66,10 +66,17 @@ class Subject(object):
         """
         logging.info("Getting trajectories.")
         if bool(self.dict_dis):
-            traj = pp.prepare_traj_interleaved(
-                self.dict_dis,
-                generate_traj=True,
-            )
+            if (self.config.multi_echo):
+                traj = pp.prepare_traj_interleaved_multi_echo(
+                    self.dict_dis,
+                    generate_traj=True,
+                    number_of_echo = self.dict_dis[constants.IOFields.NUMBER_OF_ECHO],
+                )
+            else:
+                traj = pp.prepare_traj_interleaved(
+                    self.dict_dis,
+                    generate_traj=True,
+                )
 
             traj_scaling_factor = traj_utils.get_scaling_factor(
                 recon_size=int(self.config.recon.recon_size),

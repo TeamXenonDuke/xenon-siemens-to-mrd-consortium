@@ -27,6 +27,8 @@ class IOFields(object):
     BIASFIELD_KEY = "biasfield_key"
     BONUS_SPECTRA_LABELS = "bonus_spectra_labels"
     CONTRAST_LABELS = "contrast_labels"
+    SET_LABELS = "set_labels"
+    NUMBER_OF_ECHO = "number_of_echo"
     SAMPLE_TIME = "sample_time"
     FA_PROTON = "fa_proton"
     FA_DIS = "fa_dis"

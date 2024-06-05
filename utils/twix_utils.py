@@ -251,7 +251,7 @@ def get_FOV(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     return 400.0
 
 
-def get_TE(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
+def get_TE(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: bool = False) -> float:
     """Get the te in ms.
 
     Args:
@@ -259,10 +259,13 @@ def get_TE(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     Returns:
         te in ms
     """
-    return twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3
+    if (multi_echo_flag):
+        return [twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3, twix_obj.hdr.Phoenix[("alTE", "1")] * 1e-3]
+    else:
+        return twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3
 
 
-def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
+def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: bool = False) -> float:
     """Get the dissolved phase flip angle in degrees.
 
     Args:
@@ -270,32 +273,37 @@ def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     Returns:
         flip angle in degrees
     """
-    scan_date = get_scan_date(twix_obj=twix_obj)
-    YYYY, MM, DD = scan_date.split("-")
-    if datetime.datetime(int(YYYY), int(MM), int(DD)) < datetime.datetime(2021, 5, 30):
-        logging.info("Checking for flip angle in old format.")
-        try:
-            return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "6")])
-        except:
-            pass
-        try:
-            return float(twix_obj.hdr.MeasYaps[("sWiPMemBlock", "adFree", "6")])
-        except:
-            pass
-    try:
-        return float(twix_obj.hdr.Meas["adFlipAngleDegree"].split(" ")[1])
-    except:
-        pass
-    try:
-        return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "1")])
-    except:
-        pass
-    try:
-        return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "0")])
-    except:
-        pass
-    raise ValueError("Unable to find dissolved-phase flip angle in twix object.")
+    if (multi_echo_flag):
 
+        return float(twix_obj.hdr.Meas["adFlipAngleDegree"].split(" ")[2])
+
+    else:
+
+        scan_date = get_scan_date(twix_obj=twix_obj)
+        YYYY, MM, DD = scan_date.split("-")
+        if datetime.datetime(int(YYYY), int(MM), int(DD)) < datetime.datetime(2021, 5, 30):
+            logging.info("Checking for flip angle in old format.")
+            try:
+                return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "6")])
+            except:
+                pass
+            try:
+                return float(twix_obj.hdr.MeasYaps[("sWiPMemBlock", "adFree", "6")])
+            except:
+                pass
+        try:
+            return float(twix_obj.hdr.Meas["adFlipAngleDegree"].split(" ")[1])
+        except:
+            pass
+        try:
+            return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "1")])
+        except:
+            pass
+        try:
+            return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "0")])
+        except:
+            pass
+        raise ValueError("Unable to find dissolved-phase flip angle in twix object.")
 
 def get_flipangle_gas(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     """Get the gas phase flip angle in degrees.
@@ -637,6 +645,102 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
         constants.IOFields.GRAD_DELAY_X: grad_delay_x,
         constants.IOFields.GRAD_DELAY_Y: grad_delay_y,
         constants.IOFields.GRAD_DELAY_Z: grad_delay_z,
+        constants.IOFields.NUMBER_OF_ECHO: 1,
+    }
+
+def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
+    """Get the dissolved phase and gas phase FIDs from twix object.
+
+    For reconstruction, we also need important information like the gradient delay,
+    number of fids in each phase, etc. Note, this cannot be trivially read from the
+    twix object, and need to hard code some values. For example, the gradient delay
+    is slightly different depending on the scanner.
+    Args:
+        twix_obj: twix object returned from mapVBVD function
+    Returns:
+        TODO
+    """
+    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+    flip_angle_dissolved = get_flipangle_dissolved(twix_obj,True)
+    contrast_labels = np.zeros(raw_fids.shape[0])
+    set_labels = np.zeros(raw_fids.shape[0])
+    bonus_spectra_labels = (
+        np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
+    )
+
+    # get the scan date
+    scan_date = get_scan_date(twix_obj=twix_obj)
+    YYYY, MM, DD = scan_date.split("-")
+    scan_datetime = datetime.datetime(int(YYYY), int(MM), int(DD))
+
+    logging.info("@@@@@@@@@@@@@@@@@@@@@@")    
+    logging.info(flip_angle_dissolved)
+
+    flip_angle_gas = get_flipangle_gas(twix_obj)
+    logging.info("@@@@@@@@@@@@@@@@@@@@@@")    
+    logging.info(flip_angle_gas)
+
+    # Hard code 
+    flip_angle_dissolved = 20;
+    flip_angle_gas =0.5;
+
+    logging.info(get_TE(twix_obj,True))    
+    
+
+
+    if flip_angle_dissolved == 20:
+
+
+        if raw_fids.shape[0] == 4830 or raw_fids.shape[0] == 4030:
+
+
+                logging.info("Reading in LUMC. Addset 3 4")
+                logging.info(contrast_labels.shape)
+                # set bonus spectra labels
+
+                number_of_echo = 2;
+
+                bonus_spectra_labels[-30:] = constants.BonusSpectraLabels.BONUS
+                contrast_labels[0:-30:4] = constants.ContrastLabels.GAS
+                contrast_labels[1:-30:4] = constants.ContrastLabels.DISSOLVED
+                contrast_labels[2:-30:4] = constants.ContrastLabels.GAS
+                contrast_labels[3:-30:4] = constants.ContrastLabels.DISSOLVED
+
+               
+                set_labels [-30:] =1;
+                set_labels[0:-30:4] = 1
+                set_labels[1:-30:4] = 1
+                set_labels[2:-30:4] = 2
+                set_labels[3:-30:4] = 2
+
+
+                n_frames = int((raw_fids.shape[0] - 30) / 4)
+                grad_delay_x, grad_delay_y, grad_delay_z = -5, -5, -5
+                data_gas = raw_fids[
+                    contrast_labels == constants.ContrastLabels.GAS
+                ]
+                data_dis = raw_fids[
+                    contrast_labels== constants.ContrastLabels.DISSOLVED
+                ]
+
+     
+        else:
+            raise ValueError("Cannot get data from normal dixon twix object.")
+    else:
+        raise ValueError("Cannot get data from twix object.")
+
+    return {
+        constants.IOFields.FIDS: raw_fids,
+        constants.IOFields.FIDS_GAS: data_gas,
+        constants.IOFields.FIDS_DIS: data_dis,
+        constants.IOFields.CONTRAST_LABELS: contrast_labels,
+        constants.IOFields.SET_LABELS: set_labels,
+        constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
+        constants.IOFields.N_FRAMES: n_frames,
+        constants.IOFields.GRAD_DELAY_X: grad_delay_x,
+        constants.IOFields.GRAD_DELAY_Y: grad_delay_y,
+        constants.IOFields.GRAD_DELAY_Z: grad_delay_z,
+        constants.IOFields.NUMBER_OF_ECHO: number_of_echo
     }
 
 

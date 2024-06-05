@@ -229,7 +229,7 @@ def read_dyn_twix(path: str) -> Dict[str, Any]:
     }
 
 
-def read_dis_twix(path: str) -> Dict[str, Any]:
+def read_dis_twix(path: str,multi_echo_flag: bool) -> Dict[str, Any]:
     """Read 1-point dixon disssolved phase imaging twix file.
 
     Args:
@@ -245,18 +245,25 @@ def read_dis_twix(path: str) -> Dict[str, Any]:
     twix_obj.image.flagIgnoreSeg = True
     twix_obj.image.flagRemoveOS = False
 
-    data_dict = twix_utils.get_gx_data(twix_obj=twix_obj)
+    if (multi_echo_flag):
+        data_dict = twix_utils.get_gx_data_multi_echo(twix_obj=twix_obj)
+    else:
+        data_dict = twix_utils.get_gx_data(twix_obj=twix_obj)
     filename = os.path.basename(path)
 
     return {
         constants.IOFields.CONTRAST_LABELS: data_dict[
             constants.IOFields.CONTRAST_LABELS
         ],
+        constants.IOFields.SET_LABELS: data_dict[
+            constants.IOFields.SET_LABELS
+        ],
+        
         constants.IOFields.BONUS_SPECTRA_LABELS: data_dict[
             constants.IOFields.BONUS_SPECTRA_LABELS
         ],
         constants.IOFields.SAMPLE_TIME: twix_utils.get_dwell_time(twix_obj),
-        constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj),
+        constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj,multi_echo_flag),
         constants.IOFields.FA_GAS: twix_utils.get_flipangle_gas(twix_obj),
         constants.IOFields.FIELD_STRENGTH: twix_utils.get_field_strength(twix_obj),
         constants.IOFields.FIDS: data_dict[constants.IOFields.FIDS],
@@ -280,14 +287,14 @@ def read_dis_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.SCAN_DATE: twix_utils.get_scan_date(twix_obj),
         constants.IOFields.SYSTEM_VENDOR: twix_utils.get_system_vendor(twix_obj),
         constants.IOFields.SOFTWARE_VERSION: twix_utils.get_software_version(twix_obj),
-        constants.IOFields.TE: twix_utils.get_TE(twix_obj),
+        constants.IOFields.TE: twix_utils.get_TE(twix_obj,multi_echo_flag),
         constants.IOFields.TR_GAS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.TR_DIS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.BANDWIDTH: twix_utils.get_bandwidth(
             twix_obj, data_dict, filename
         ),
+        constants.IOFields.NUMBER_OF_ECHO: data_dict[constants.IOFields.NUMBER_OF_ECHO],
     }
-
 
 def read_ute_twix(path: str) -> Dict[str, Any]:
     """Read proton ute imaging twix file.

@@ -111,6 +111,55 @@ def prepare_traj_interleaved(
 
     return traj
 
+def prepare_traj_interleaved_multi_echo(
+    data_dict: Dict[str, Any], generate_traj: bool = True, number_of_echo: int = 1
+) -> Tuple[np.ndarray, ...]:
+    """Prepare data and trajectory for interleaved data reconstruction.
+
+    Uses a trajectory generated from the metadata in the twix file if generate_traj is
+    True. Otherwise, it uses a manually imported trajectory.
+
+    Args:
+        data_dict (dict): dictionary containing data and metadata extracted from the twix file.
+                    Optionally also contains trajectories.
+        generate_traj (bool): bool flag to generate trajectory from metadata in twix file.
+
+    Returns:
+        traj (np.array): interleaved gas and dissolved-phase trajectories
+                        of shape (2*n_projections, n_points, 3)
+    """
+
+    if generate_traj:
+        traj_x, traj_y, traj_z = traj_utils.generate_trajectory(
+            sample_time=data_dict[constants.IOFields.SAMPLE_TIME],
+            ramp_time=data_dict[constants.IOFields.RAMP_TIME],
+            n_frames=data_dict[constants.IOFields.N_FRAMES], # Multi-echo half the point
+            n_points=data_dict[constants.IOFields.FIDS_DIS].shape[1],
+            del_x=data_dict[constants.IOFields.GRAD_DELAY_X],
+            del_y=data_dict[constants.IOFields.GRAD_DELAY_Y],
+            del_z=data_dict[constants.IOFields.GRAD_DELAY_Z],
+        )
+    else:
+        traj = data_dict[constants.IOFields.TRAJ]
+        traj_x = traj[:, :, 0]
+        traj_y = traj[:, :, 1]
+        traj_z = traj[:, :, 2]
+
+    # stack trajectory
+    traj_dis = np.stack([traj_x, traj_y, traj_z], axis=-1)
+    traj_gas = np.copy(traj_dis)
+
+    # interleave gas and dissolved trajectories
+    traj = np.zeros((traj_dis.shape[0] * number_of_echo * 2, traj_dis.shape[1], traj_dis.shape[2]))
+    for i in range(traj_dis.shape[0]):
+
+        for echo_index in range(number_of_echo*2):
+            if (echo_index%2 == 0):
+                traj[number_of_echo*2 * i+echo_index, :, :] = traj_gas[i, :, :]
+            else:
+                traj[number_of_echo*2 * i+echo_index, :, :] = traj_dis[i, :, :]
+
+    return traj
 
 def normalize_data(data: np.ndarray, normalization: np.ndarray) -> np.ndarray:
     """Normalize data by a given normalization array.

@@ -31,6 +31,7 @@ class Config(config_dict.ConfigDict):
         self.proton = Proton()
         self.data_dir = ""
         self.subject_id = "test"
+        self.multi_echo = False
 
 
 class Recon(object):

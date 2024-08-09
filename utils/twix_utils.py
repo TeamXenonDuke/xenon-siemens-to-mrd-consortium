@@ -465,6 +465,7 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
     flip_angle_dissolved = get_flipangle_dissolved(twix_obj)
     contrast_labels = np.zeros(raw_fids.shape[0])
+    set_labels = np.ones(raw_fids.shape[0])
     bonus_spectra_labels = (
         np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
     )
@@ -640,6 +641,7 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
         constants.IOFields.FIDS_GAS: data_gas,
         constants.IOFields.FIDS_DIS: data_dis,
         constants.IOFields.CONTRAST_LABELS: contrast_labels,
+        constants.IOFields.SET_LABELS: set_labels,
         constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: n_frames,
         constants.IOFields.GRAD_DELAY_X: grad_delay_x,

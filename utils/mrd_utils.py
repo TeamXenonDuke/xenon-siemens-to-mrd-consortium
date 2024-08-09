@@ -127,7 +127,12 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         acquisition_header.idx.contrast = int(
             data_dict[constants.IOFields.CONTRAST_LABELS][acquisition_num]
         )
-        acquisition_header.idx.set = int(data_dict[constants.IOFields.SET_LABELS][acquisition_num])
+        constrast_labels = int(
+            data_dict[constants.IOFields.CONTRAST_LABELS][acquisition_num]
+        )
+        acquisition_header.idx.contrast = constrast_labels
+        if (constrast_labels>0):
+            acquisition_header.idx.set = int(data_dict[constants.IOFields.SET_LABELS][acquisition_num])
         acquisition_header.measurement_uid = int(
             data_dict[constants.IOFields.BONUS_SPECTRA_LABELS][acquisition_num]
         )

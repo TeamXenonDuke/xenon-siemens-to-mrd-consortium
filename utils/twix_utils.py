@@ -416,10 +416,12 @@ def get_dyn_data(
     bonus_spectra_labels = (
         np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
     )
-
+    set_labels = np.ones(raw_fids.shape[0]) 
+    
     return {
         constants.IOFields.FIDS: raw_fids,
         constants.IOFields.CONTRAST_LABELS: contrast_labels,
+        constants.IOFields.SET_LABELS: set_labels,
         constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: raw_fids.shape[0],
         constants.IOFields.N_POINTS: raw_fids.shape[1],

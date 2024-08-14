@@ -200,6 +200,10 @@ def read_dyn_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.CONTRAST_LABELS: data_dict[
             constants.IOFields.CONTRAST_LABELS
         ],
+        constants.IOFields.SET_LABELS: data_dict[
+            constants.IOFields.SET_LABELS
+        ],
+
         constants.IOFields.BONUS_SPECTRA_LABELS: data_dict[
             constants.IOFields.BONUS_SPECTRA_LABELS
         ],

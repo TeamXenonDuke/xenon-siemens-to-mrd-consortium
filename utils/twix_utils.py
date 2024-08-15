@@ -544,6 +544,26 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
             # define number of frames and gradient delay
             n_frames = int((raw_fids.shape[0] - 30) / 2)
             grad_delay_x, grad_delay_y, grad_delay_z = -5, -5, -5
+        elif raw_fids.shape[0] // 100 == 24:
+            logging.info("Reading in medium dixon data on Siemens Prisma.")
+            num_spectra = raw_fids.shape[0] % 100
+
+            # create contrast labels
+            contrast_labels[0:-num_spectra:2] = constants.ContrastLabels.GAS
+            contrast_labels[1:-num_spectra:2] = constants.ContrastLabels.DISSOLVED
+
+            # set bonus spectra labels
+            bonus_spectra_labels[-num_spectra:] = constants.BonusSpectraLabels.BONUS
+
+            # extract gas and dissolved phase fids (minus bonus spectra)
+            data_gas = raw_fids[:-num_spectra][
+                contrast_labels[:-num_spectra] == constants.ContrastLabels.GAS
+            ]
+            data_dis = raw_fids[:-num_spectra][
+                contrast_labels[:-num_spectra] == constants.ContrastLabels.DISSOLVED
+            ]
+            n_frames = int((raw_fids.shape[0] - num_spectra) / 2)
+            grad_delay_x, grad_delay_y, grad_delay_z = -5, -5, -5
         else:
             raise ValueError("Cannot get data from 'medium' dixon twix object.")
     elif flip_angle_dissolved == 20:

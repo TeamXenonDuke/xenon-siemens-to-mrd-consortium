@@ -714,8 +714,8 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
 
                 bonus_spectra_labels[-30:] = constants.BonusSpectraLabels.BONUS
                 contrast_labels[0:-30:4] = constants.ContrastLabels.GAS
-                contrast_labels[1:-30:4] = constants.ContrastLabels.DISSOLVED
-                contrast_labels[2:-30:4] = constants.ContrastLabels.GAS
+                contrast_labels[1:-30:4] = constants.ContrastLabels.GAS
+                contrast_labels[2:-30:4] = constants.ContrastLabels.DISSOLVED
                 contrast_labels[3:-30:4] = constants.ContrastLabels.DISSOLVED
 
                

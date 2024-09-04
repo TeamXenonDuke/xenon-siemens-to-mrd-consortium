@@ -721,8 +721,8 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
                
                 set_labels [-30:] =1;
                 set_labels[0:-30:4] = 1
-                set_labels[1:-30:4] = 1
-                set_labels[2:-30:4] = 2
+                set_labels[1:-30:4] = 2
+                set_labels[2:-30:4] = 1
                 set_labels[3:-30:4] = 2
 
 

@@ -125,6 +125,7 @@ def get_ute_twix_files(path: str) -> str:
             glob.glob(os.path.join(path, "**1H***.dat"))
             + glob.glob(os.path.join(path, "**BHUTE***.dat"))
             + glob.glob(os.path.join(path, "**ute***.dat"))
+            + glob.glob(os.path.join(path, "**h_radial***.dat"))
         )[0]
     except:
         raise ValueError("Can't find twix file in path.")

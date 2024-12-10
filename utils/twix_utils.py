@@ -494,7 +494,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
 
             # define number of frames and gradient delay
             n_frames = int(raw_fids.shape[0] / 2)
-            grad_delay_x, grad_delay_y, grad_delay_z = -5, -5, -5
         elif raw_fids.shape[0] == 4230:
             logging.info("Reading in fast dixon data on Siemens Prisma.")
 
@@ -517,7 +516,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
 
             # define number of frames and gradient delay
             n_frames = int((raw_fids.shape[0] - 30) / 2)
-            grad_delay_x, grad_delay_y, grad_delay_z = -5, -5, -5
         else:
             raise ValueError("Cannot get data from 'fast' dixon twix object.")
     elif flip_angle_dissolved == 15:
@@ -543,7 +541,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
 
             # define number of frames and gradient delay
             n_frames = int((raw_fids.shape[0] - 30) / 2)
-            grad_delay_x, grad_delay_y, grad_delay_z = -5, -5, -5
         elif raw_fids.shape[0] // 100 == 24:
             logging.info("Reading in medium dixon data on Siemens Prisma.")
             num_spectra = raw_fids.shape[0] % 100
@@ -563,7 +560,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
                 contrast_labels[:-num_spectra] == constants.ContrastLabels.DISSOLVED
             ]
             n_frames = int((raw_fids.shape[0] - num_spectra) / 2)
-            grad_delay_x, grad_delay_y, grad_delay_z = -5, -5, -5
         else:
             raise ValueError("Cannot get data from 'medium' dixon twix object.")
     elif flip_angle_dissolved == 20:
@@ -588,7 +584,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
             ]
 
             n_frames = int((raw_fids.shape[0] - 30) / 2)
-            grad_delay_x, grad_delay_y, grad_delay_z = -5, -5, -5
         elif raw_fids.shape[0] == 2002:
             if scan_datetime > datetime.datetime(2017, 12, 31):
                 logging.info("Reading in 'normal' dixon data on Siemens Trio.")
@@ -605,7 +600,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
 
                 # define number of frames and gradient delay
                 n_frames = int(raw_fids.shape[0] / 2)
-                grad_delay_x, grad_delay_y, grad_delay_z = 0, -4, -3
             else:
                 logging.info("Reading in 'normal' dixon data on Siemens Trio.")
                 # create contrast labels
@@ -620,7 +614,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
 
                 # define number of frames and gradient delay
                 n_frames = int(raw_fids.shape[0] / 2)
-                grad_delay_x, grad_delay_y, grad_delay_z = 24, 22, 22
         elif raw_fids.shape[0] == 2032:
             logging.info("Reading in normal dixon on Siemens Trio w/ bonus spectra.")
 
@@ -636,7 +629,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
 
             # define number of frames and gradient delay
             n_frames = int(raw_fids.shape[0] / 2)
-            grad_delay_x, grad_delay_y, grad_delay_z = 0, -4, -3
         elif raw_fids.shape[0] == 2000:
             logging.info("Reading in normal dixon on Siemens Trio 2007 or 2008.")
 
@@ -652,7 +644,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
 
             # define number of frames and gradient delay
             n_frames = int(raw_fids.shape[0] / 2)
-            grad_delay_x, grad_delay_y, grad_delay_z = 0, -4, -3
         else:
             raise ValueError("Cannot get data from normal dixon twix object.")
     else:
@@ -666,9 +657,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
         constants.IOFields.SET_LABELS: set_labels,
         constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: n_frames,
-        constants.IOFields.GRAD_DELAY_X: grad_delay_x,
-        constants.IOFields.GRAD_DELAY_Y: grad_delay_y,
-        constants.IOFields.GRAD_DELAY_Z: grad_delay_z,
         constants.IOFields.NUMBER_OF_ECHO: 1,
     }
 
@@ -727,7 +715,6 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
 
 
                 n_frames = int((raw_fids.shape[0] - 30) / 4)
-                grad_delay_x, grad_delay_y, grad_delay_z = -5, -5, -5
                 data_gas = raw_fids[
                     contrast_labels == constants.ContrastLabels.GAS
                 ]
@@ -749,9 +736,6 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
         constants.IOFields.SET_LABELS: set_labels,
         constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: n_frames,
-        constants.IOFields.GRAD_DELAY_X: grad_delay_x,
-        constants.IOFields.GRAD_DELAY_Y: grad_delay_y,
-        constants.IOFields.GRAD_DELAY_Z: grad_delay_z,
         constants.IOFields.NUMBER_OF_ECHO: number_of_echo
     }
 
@@ -801,7 +785,4 @@ def get_ute_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
         constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.FIDS: raw_fids,
         constants.IOFields.N_FRAMES: nframes,
-        constants.IOFields.GRAD_DELAY_X: -5,
-        constants.IOFields.GRAD_DELAY_Y: -5,
-        constants.IOFields.GRAD_DELAY_Z: -5,
     }

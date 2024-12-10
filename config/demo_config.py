@@ -25,6 +25,8 @@ class Config(base_config.Config):
         self.data_dir = "/Users/MyName/Documents/patients/007-005B/"
         self.subject_id = "007-005B"
         self.recon = Recon()
+        self.dixon = Dixon()
+        self.proton = Proton()
 
 
 class Recon(base_config.Recon):
@@ -41,6 +43,24 @@ class Recon(base_config.Recon):
         self.recon_size = 64
         self.matrix_size = 128
 
+class Dixon(object):
+    """Define Dixon sequence configurations."""
+
+    def __init__(self):
+        self._ = 0
+        self.gradient_delay_x = -5
+        self.gradient_delay_y = -5
+        self.gradient_delay_z = -5
+
+
+class Proton(object):
+    """Define proton sequence configurations."""
+
+    def __init__(self):
+        self._ = 0
+        self.gradient_delay_x = -5
+        self.gradient_delay_y = -5
+        self.gradient_delay_z = -5
 
 def get_config() -> config_dict.ConfigDict:
     """Return the config dict. This is a required function.

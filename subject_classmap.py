@@ -37,6 +37,11 @@ class Subject(object):
             io_utils.get_dis_twix_files(str(self.config.data_dir)), self.config.multi_echo
         )
         self.dict_dis[constants.IOFields.SUBJECT_ID] = self.config.subject_id
+        self.dict_dis[constants.IOFields.GRAD_DELAY_X]= self.config.dixon.gradient_delay_x
+        self.dict_dis[constants.IOFields.GRAD_DELAY_Y]= self.config.dixon.gradient_delay_y
+        self.dict_dis[constants.IOFields.GRAD_DELAY_Z]= self.config.dixon.gradient_delay_z
+
+
         #except:
         #    logging.info("Could not find/read Dixon file.")
 
@@ -53,6 +58,9 @@ class Subject(object):
                 io_utils.get_ute_twix_files(str(self.config.data_dir))
             )
             self.dict_proton[constants.IOFields.SUBJECT_ID] = self.config.subject_id
+            self.dict_proton[constants.IOFields.GRAD_DELAY_X]= self.config.proton.gradient_delay_x
+            self.dict_proton[constants.IOFields.GRAD_DELAY_Y]= self.config.proton.gradient_delay_y
+            self.dict_proton[constants.IOFields.GRAD_DELAY_Z]= self.config.proton.gradient_delay_z
         except:
             logging.info("Could not find/read proton file.")
 

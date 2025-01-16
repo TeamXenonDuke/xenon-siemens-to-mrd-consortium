@@ -48,7 +48,6 @@ class Recon(object):
         self.matrix_size = 128
 
 
-
 class Calibration(object):
     """Define calibration sequence configurations.
 
@@ -65,9 +64,6 @@ class Dixon(object):
 
     def __init__(self):
         self._ = 0
-        self.gradient_delay_x = -5
-        self.gradient_delay_y = -5
-        self.gradient_delay_z = -5
 
 
 class Proton(object):
@@ -75,9 +71,6 @@ class Proton(object):
 
     def __init__(self):
         self._ = 0
-        self.gradient_delay_x = -5
-        self.gradient_delay_y = -5
-        self.gradient_delay_z = -5
 
 
 def get_config() -> config_dict.ConfigDict:

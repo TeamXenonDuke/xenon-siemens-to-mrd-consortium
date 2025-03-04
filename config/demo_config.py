@@ -43,7 +43,7 @@ class Recon(base_config.Recon):
         self.recon_size = 64
         self.matrix_size = 128
 
-class Dixon(object):
+class Dixon(base_config.object):
     """Define Dixon sequence configurations."""
 
     def __init__(self):
@@ -53,7 +53,7 @@ class Dixon(object):
         self.gradient_delay_z = -5
 
 
-class Proton(object):
+class Proton(base_config.object):
     """Define proton sequence configurations."""
 
     def __init__(self):

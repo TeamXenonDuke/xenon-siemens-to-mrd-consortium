@@ -279,9 +279,6 @@ def read_dis_twix(path: str,multi_echo_flag: bool) -> Dict[str, Any]:
         constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY: twix_utils.get_excitation_freq(
             twix_obj
         ),
-        constants.IOFields.GRAD_DELAY_X: data_dict[constants.IOFields.GRAD_DELAY_X],
-        constants.IOFields.GRAD_DELAY_Y: data_dict[constants.IOFields.GRAD_DELAY_Y],
-        constants.IOFields.GRAD_DELAY_Z: data_dict[constants.IOFields.GRAD_DELAY_Z],
         constants.IOFields.INSTITUTION: twix_utils.get_institution(twix_obj),
         constants.IOFields.N_FRAMES: data_dict[constants.IOFields.N_FRAMES],
         constants.IOFields.N_POINTS: data_dict[constants.IOFields.FIDS].shape[1],
@@ -343,9 +340,6 @@ def read_ute_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY: twix_utils.get_excitation_freq(
             twix_obj
         ),
-        constants.IOFields.GRAD_DELAY_X: data_dict[constants.IOFields.GRAD_DELAY_X],
-        constants.IOFields.GRAD_DELAY_Y: data_dict[constants.IOFields.GRAD_DELAY_Y],
-        constants.IOFields.GRAD_DELAY_Z: data_dict[constants.IOFields.GRAD_DELAY_Z],
         constants.IOFields.INSTITUTION: twix_utils.get_institution(twix_obj),
         constants.IOFields.N_FRAMES: data_dict[constants.IOFields.N_FRAMES],
         constants.IOFields.N_POINTS: data_dict[constants.IOFields.FIDS].shape[1],

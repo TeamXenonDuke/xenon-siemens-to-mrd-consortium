@@ -234,8 +234,8 @@ def read_dyn_twix(path: str) -> Dict[str, Any]:
     }
 
 
-def read_dis_twix(path: str,multi_echo_flag: bool) -> Dict[str, Any]:
-    """Read 1-point dixon disssolved phase imaging twix file.
+def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, Any]:
+    """Read dixon disssolved phase imaging twix file.
 
     Args:
         path: str file path of twix file
@@ -250,10 +250,15 @@ def read_dis_twix(path: str,multi_echo_flag: bool) -> Dict[str, Any]:
     twix_obj.image.flagIgnoreSeg = True
     twix_obj.image.flagRemoveOS = False
 
-    if (multi_echo_flag):
+    # read gx data
+    if multi_echo_flag == "multi_echo_2":
+        data_dict = twix_utils.get_gx_data_multi_echo_2(twix_obj=twix_obj)
+    elif multi_echo_flag == "multi_echo":
         data_dict = twix_utils.get_gx_data_multi_echo(twix_obj=twix_obj)
-    else:
+    elif multi_echo_flag == "single_echo":
         data_dict = twix_utils.get_gx_data(twix_obj=twix_obj)
+    else:
+        raise ValueError("Could not read gas exchange data.")
     filename = os.path.basename(path)
 
     return {

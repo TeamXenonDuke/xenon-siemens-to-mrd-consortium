@@ -35,7 +35,7 @@ class Subject(object):
         #try:
         self.dict_dis = io_utils.read_dis_twix(
             io_utils.get_dis_twix_files(str(self.config.data_dir)), self.config.multi_echo
-        )
+            )
         self.dict_dis[constants.IOFields.SUBJECT_ID] = self.config.subject_id
         self.dict_dis[constants.IOFields.GRAD_DELAY_X]= self.config.dixon.gradient_delay_x
         self.dict_dis[constants.IOFields.GRAD_DELAY_Y]= self.config.dixon.gradient_delay_y
@@ -74,7 +74,7 @@ class Subject(object):
         """
         logging.info("Getting trajectories.")
         if bool(self.dict_dis):
-            if (self.config.multi_echo):
+            if self.config.multi_echo == "multi_echo" or self.config.multi_echo == "multi_echo_2":
                 traj = pp.prepare_traj_interleaved_multi_echo(
                     self.dict_dis,
                     generate_traj=True,

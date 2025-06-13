@@ -251,59 +251,52 @@ def get_FOV(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     return 400.0
 
 
-def get_TE(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: bool = False) -> float:
+def get_TE(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> float:
     """Get the te in ms.
 
     Args:
         twix_obj: twix object returned from mapVBVD function.
+        multi_echo_flag: multi-echo flag from config file
     Returns:
         te in ms
     """
-    if (multi_echo_flag):
+    if multi_echo_flag == "multi_echo_2":
+        return [
+            twix_obj.hdr.Phoenix[("alTE", "8")] * 1e-3, twix_obj.hdr.Phoenix[("alTE", "9")] * 1e-3,
+            twix_obj.hdr.Phoenix[("alTE","10")] * 1e-3
+            ]
+    elif multi_echo_flag == "multi_echo":
         return [twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3, twix_obj.hdr.Phoenix[("alTE", "1")] * 1e-3]
-    else:
+    elif multi_echo_flag == "single_echo":
         return twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3
+    else:
+        raise ValueError("Unable to find TE in twix object.")
 
 
-def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: bool = False) -> float:
+def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> float:
     """Get the dissolved phase flip angle in degrees.
 
     Args:
         twix_obj: twix object returned from mapVBVD function.
+        multi_echo_flag: multi-echo flag from config file
     Returns:
         flip angle in degrees
     """
-    if (multi_echo_flag):
-
-        return float(twix_obj.hdr.Meas["adFlipAngleDegree"].split(" ")[2])
-
-    else:
-
-        scan_date = get_scan_date(twix_obj=twix_obj)
-        YYYY, MM, DD = scan_date.split("-")
-        if datetime.datetime(int(YYYY), int(MM), int(DD)) < datetime.datetime(2021, 5, 30):
-            logging.info("Checking for flip angle in old format.")
-            try:
-                return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "6")])
-            except:
-                pass
-            try:
-                return float(twix_obj.hdr.MeasYaps[("sWiPMemBlock", "adFree", "6")])
-            except:
-                pass
+    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo":
         try:
-            return float(twix_obj.hdr.Meas["adFlipAngleDegree"].split(" ")[1])
+            return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "2")])
         except:
-            pass
+            raise ValueError("Unable to find dissolved-phase flip angle in twix object.")
+
+    elif multi_echo_flag == "single_echo":
         try:
             return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "1")])
         except:
-            pass
-        try:
-            return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "0")])
-        except:
-            pass
+            raise ValueError("Unable to find dissolved-phase flip angle in twix object.")
+        
+    else:
         raise ValueError("Unable to find dissolved-phase flip angle in twix object.")
+
 
 def get_flipangle_gas(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     """Get the gas phase flip angle in degrees.
@@ -430,7 +423,7 @@ def get_dyn_data(
 
 def get_bandwidth(
     twix_obj: mapvbvd._attrdict.AttrDict, data_dict: Dict[str, Any], filename: str
-) -> float:
+    ) -> float:
     """Get the bandwidth in Hz/pixel.
 
     If the filename contains "BW", then this is a Ziyi-era sequence and the bandwidth
@@ -452,6 +445,48 @@ def get_bandwidth(
     )
 
 
+def get_bonus_number_gas(
+    twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo"
+    ) -> int:
+    """Get number of gas bonus spectra
+
+    Args:
+        twix_obj: twix object returned from mapVBVD function.
+        multi_echo_flag: multi-echo flag from config file
+    Returns:
+        number of bonus spectra
+    """
+    if multi_echo_flag == "single_echo" or multi_echo_flag == "multi_echo":
+        bonus_number_gas = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "10")])
+    elif multi_echo_flag == "multi_echo_2":
+        bonus_number_gas = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")])
+    else:
+        raise ValueError("Unable to extract number of gas bonus spectra.")
+    
+    return bonus_number_gas
+
+
+def get_bonus_number_dissolved(
+    twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo"
+    ) -> int:
+    """Get number of dissolved bonus spectra
+
+    Args:
+        twix_obj: twix object returned from mapVBVD function.
+        multi_echo_flag: multi-echo flag from config file
+    Returns:
+        number of dissolved bonus spectra
+    """
+    if multi_echo_flag == "single_echo" or multi_echo_flag == "multi_echo":
+        bonus_number_dissolved = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "5")])
+    elif multi_echo_flag == "multi_echo_2":
+        bonus_number_dissolved = int(twix_obj.hdr.MeasYaps[("sWipMemBlock","adFree","3")])
+    else:
+        raise ValueError("Unable to extract number of dissolved bonus spectra.")
+    
+    return bonus_number_dissolved
+
+
 def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     """Get the dissolved phase and gas phase FIDs from twix object.
 
@@ -465,190 +500,37 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
         TODO
     """
     raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
-    flip_angle_dissolved = get_flipangle_dissolved(twix_obj)
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.ones(raw_fids.shape[0])
     bonus_spectra_labels = (
         np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
     )
 
-    # get the scan date
-    scan_date = get_scan_date(twix_obj=twix_obj)
-    YYYY, MM, DD = scan_date.split("-")
-    scan_datetime = datetime.datetime(int(YYYY), int(MM), int(DD))
+    # extract number of bonus spectra
+    bonus_number_gas = get_bonus_number_gas(twix_obj, "single_echo")
+    bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, "single_echo")
+    bonus_number = bonus_number_gas + bonus_number_dissolved
 
-    # check the flip angle and scan date to get the data
-    if flip_angle_dissolved == 12:
-        if raw_fids.shape[0] == 4200:
-            logging.info("Reading in fast dixon data on Siemens Prisma.")
+    # read in data
+    contrast_labels[0:-bonus_number:2] = constants.ContrastLabels.GAS
+    contrast_labels[1:-bonus_number:2] = constants.ContrastLabels.DISSOLVED
+    contrast_labels[-bonus_number_gas:] = constants.ContrastLabels.GAS
+    contrast_labels[-bonus_number:-bonus_number_gas] = constants.ContrastLabels.DISSOLVED
 
-            # create contrast labels
-            contrast_labels[0::2] = constants.ContrastLabels.GAS
-            contrast_labels[1::2] = constants.ContrastLabels.DISSOLVED
+    # set bonus spectra labels
+    bonus_spectra_labels[-bonus_number:] = constants.BonusSpectraLabels.BONUS
 
-            # extract gas and dissolved phase fids
-            data_gas = raw_fids[contrast_labels == constants.ContrastLabels.GAS, :]
-            data_dis = raw_fids[
-                contrast_labels == constants.ContrastLabels.DISSOLVED, :
-            ]
+    # extract gas and dissolved phase fids (minus bonus spectra)
+    data_gas = raw_fids[:-bonus_number][
+        contrast_labels[:-bonus_number] == constants.ContrastLabels.GAS
+    ]
+    data_dis = raw_fids[:-bonus_number][
+        contrast_labels[:-bonus_number] == constants.ContrastLabels.DISSOLVED
+    ]
 
-            # define number of frames and gradient delay
-            n_frames = int(raw_fids.shape[0] / 2)
-        elif raw_fids.shape[0] == 4230:
-            logging.info("Reading in fast dixon data on Siemens Prisma.")
-
-            # create contrast labels
-            contrast_labels[0:-30:2] = constants.ContrastLabels.GAS
-            contrast_labels[1:-30:2] = constants.ContrastLabels.DISSOLVED
-            contrast_labels[-20:] = constants.ContrastLabels.GAS
-            contrast_labels[-30:-20] = constants.ContrastLabels.DISSOLVED
-
-            # set bonus spectra labels
-            bonus_spectra_labels[-30:] = constants.BonusSpectraLabels.BONUS
-
-            # extract gas and dissolved phase fids (minus bonus spectra)
-            data_gas = raw_fids[:-30][
-                contrast_labels[:-30] == constants.ContrastLabels.GAS
-            ]
-            data_dis = raw_fids[:-30][
-                contrast_labels[:-30] == constants.ContrastLabels.DISSOLVED
-            ]
-
-            # define number of frames and gradient delay
-            n_frames = int((raw_fids.shape[0] - 30) / 2)
-        else:
-            raise ValueError("Cannot get data from 'fast' dixon twix object.")
-    elif flip_angle_dissolved == 15:
-        if raw_fids.shape[0] == 2430:
-            logging.info("Reading in medium dixon data on Siemens Prisma.")
-
-            # create contrast labels
-            contrast_labels[0:-30:2] = constants.ContrastLabels.GAS
-            contrast_labels[1:-30:2] = constants.ContrastLabels.DISSOLVED
-            contrast_labels[-20:] = constants.ContrastLabels.GAS
-            contrast_labels[-30:-20] = constants.ContrastLabels.DISSOLVED
-
-            # set bonus spectra labels
-            bonus_spectra_labels[-30:] = constants.BonusSpectraLabels.BONUS
-
-            # extract gas and dissolved phase fids (minus bonus spectra)
-            data_gas = raw_fids[:-30][
-                contrast_labels[:-30] == constants.ContrastLabels.GAS
-            ]
-            data_dis = raw_fids[:-30][
-                contrast_labels[:-30] == constants.ContrastLabels.DISSOLVED
-            ]
-
-            # define number of frames and gradient delay
-            n_frames = int((raw_fids.shape[0] - 30) / 2)
-        elif raw_fids.shape[0] // 100 == 24:
-            logging.info("Reading in medium dixon data on Siemens Prisma.")
-            num_spectra = raw_fids.shape[0] % 100
-
-            # create contrast labels
-            contrast_labels[0:-num_spectra:2] = constants.ContrastLabels.GAS
-            contrast_labels[1:-num_spectra:2] = constants.ContrastLabels.DISSOLVED
-
-            # set bonus spectra labels
-            bonus_spectra_labels[-num_spectra:] = constants.BonusSpectraLabels.BONUS
-
-            # extract gas and dissolved phase fids (minus bonus spectra)
-            data_gas = raw_fids[:-num_spectra][
-                contrast_labels[:-num_spectra] == constants.ContrastLabels.GAS
-            ]
-            data_dis = raw_fids[:-num_spectra][
-                contrast_labels[:-num_spectra] == constants.ContrastLabels.DISSOLVED
-            ]
-            n_frames = int((raw_fids.shape[0] - num_spectra) / 2)
-        else:
-            raise ValueError("Cannot get data from 'medium' dixon twix object.")
-    elif flip_angle_dissolved == 20:
-        if raw_fids.shape[0] == 2030:
-            logging.info("Reading in 'normal' dixon data on Siemens Prisma w/ bonus.")
-
-            # create contrast labels
-            contrast_labels[0:-30:2] = constants.ContrastLabels.GAS
-            contrast_labels[1:-30:2] = constants.ContrastLabels.DISSOLVED
-            contrast_labels[-20:] = constants.ContrastLabels.GAS
-            contrast_labels[-30:-20] = constants.ContrastLabels.DISSOLVED
-
-            # set bonus spectra labels
-            bonus_spectra_labels[-30:] = constants.BonusSpectraLabels.BONUS
-
-            # extract gas and dissolved phase fids (minus bonus spectra)
-            data_gas = raw_fids[:-30][
-                contrast_labels[:-30] == constants.ContrastLabels.GAS
-            ]
-            data_dis = raw_fids[:-30][
-                contrast_labels[:-30] == constants.ContrastLabels.DISSOLVED
-            ]
-
-            n_frames = int((raw_fids.shape[0] - 30) / 2)
-        elif raw_fids.shape[0] == 2002:
-            if scan_datetime > datetime.datetime(2017, 12, 31):
-                logging.info("Reading in 'normal' dixon data on Siemens Trio.")
-
-                # create contrast labels
-                contrast_labels[0::2] = constants.ContrastLabels.GAS
-                contrast_labels[1::2] = constants.ContrastLabels.DISSOLVED
-
-                # extract gas and dissolved phase fids
-                data_gas = raw_fids[contrast_labels == constants.ContrastLabels.GAS, :]
-                data_dis = raw_fids[
-                    contrast_labels == constants.ContrastLabels.DISSOLVED, :
-                ]
-
-                # define number of frames and gradient delay
-                n_frames = int(raw_fids.shape[0] / 2)
-            else:
-                logging.info("Reading in 'normal' dixon data on Siemens Trio.")
-                # create contrast labels
-                contrast_labels[0::2] = constants.ContrastLabels.GAS
-                contrast_labels[1::2] = constants.ContrastLabels.DISSOLVED
-
-                # extract gas and dissolved phase fids
-                data_gas = raw_fids[contrast_labels == constants.ContrastLabels.GAS, :]
-                data_dis = raw_fids[
-                    contrast_labels == constants.ContrastLabels.DISSOLVED, :
-                ]
-
-                # define number of frames and gradient delay
-                n_frames = int(raw_fids.shape[0] / 2)
-        elif raw_fids.shape[0] == 2032:
-            logging.info("Reading in normal dixon on Siemens Trio w/ bonus spectra.")
-
-            # create contrast labels (unsure of contrasts for bonus spectra, using all interleaved for now)
-            contrast_labels[0::2] = constants.ContrastLabels.GAS
-            contrast_labels[1::2] = constants.ContrastLabels.DISSOLVED
-
-            # extract gas and dissolved phase fids
-            data_gas = raw_fids[contrast_labels == constants.ContrastLabels.GAS, :]
-            data_dis = raw_fids[
-                contrast_labels == constants.ContrastLabels.DISSOLVED, :
-            ]
-
-            # define number of frames and gradient delay
-            n_frames = int(raw_fids.shape[0] / 2)
-        elif raw_fids.shape[0] == 2000:
-            logging.info("Reading in normal dixon on Siemens Trio 2007 or 2008.")
-
-            # create contrast labels
-            contrast_labels[0::2] = constants.ContrastLabels.GAS
-            contrast_labels[1::2] = constants.ContrastLabels.DISSOLVED
-
-            # extract gas and dissolved phase fids
-            data_gas = raw_fids[contrast_labels == constants.ContrastLabels.GAS, :]
-            data_dis = raw_fids[
-                contrast_labels == constants.ContrastLabels.DISSOLVED, :
-            ]
-
-            # define number of frames and gradient delay
-            n_frames = int(raw_fids.shape[0] / 2)
-        else:
-            raise ValueError("Cannot get data from normal dixon twix object.")
-    else:
-        raise ValueError("Cannot get data from twix object.")
-
+    # define number of frames and gradient delay
+    n_frames = int((raw_fids.shape[0] - bonus_number) / 2)
+    
     return {
         constants.IOFields.FIDS: raw_fids,
         constants.IOFields.FIDS_GAS: data_gas,
@@ -673,60 +555,103 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
         TODO
     """
     raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
-    flip_angle_dissolved = get_flipangle_dissolved(twix_obj,True)
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.zeros(raw_fids.shape[0])
     bonus_spectra_labels = (
         np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
     )
 
-    # get the scan date
-    scan_date = get_scan_date(twix_obj=twix_obj)
-    YYYY, MM, DD = scan_date.split("-")
-    scan_datetime = datetime.datetime(int(YYYY), int(MM), int(DD))
+    logging.info(get_TE(twix_obj,"multi_echo"))    
+
+    # extract number of bonus spectra
+    bonus_number_gas = get_bonus_number_gas(twix_obj, "multi_echo")
+    bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, "multi_echo")
+    bonus_number = bonus_number_gas + bonus_number_dissolved
+
+    # set bonus spectra labels
+    bonus_spectra_labels[-bonus_number:] = constants.BonusSpectraLabels.BONUS
+    contrast_labels[0:-bonus_number:4] = constants.ContrastLabels.GAS
+    contrast_labels[1:-bonus_number:4] = constants.ContrastLabels.GAS
+    contrast_labels[2:-bonus_number:4] = constants.ContrastLabels.DISSOLVED
+    contrast_labels[3:-bonus_number:4] = constants.ContrastLabels.DISSOLVED
+                
+    set_labels [-bonus_number:] = 1
+    set_labels[0:-bonus_number:4] = 1
+    set_labels[1:-bonus_number:4] = 2
+    set_labels[2:-bonus_number:4] = 1
+    set_labels[3:-bonus_number:4] = 2
+
+    n_frames = int((raw_fids.shape[0] - bonus_number) / 4)
+    data_gas = raw_fids[
+        contrast_labels == constants.ContrastLabels.GAS
+    ]
+    data_dis = raw_fids[
+        contrast_labels== constants.ContrastLabels.DISSOLVED
+    ]
+
+    return {
+        constants.IOFields.FIDS: raw_fids,
+        constants.IOFields.FIDS_GAS: data_gas,
+        constants.IOFields.FIDS_DIS: data_dis,
+        constants.IOFields.CONTRAST_LABELS: contrast_labels,
+        constants.IOFields.SET_LABELS: set_labels,
+        constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
+        constants.IOFields.N_FRAMES: n_frames,
+        constants.IOFields.NUMBER_OF_ECHO: 2
+    }
 
 
-    logging.info(get_TE(twix_obj,True))    
-    
+def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
+    """Get the dissolved phase and gas phase FIDs from twix object.
+    Initially written for DixonXP_2501_KUMC sequence
 
+    For reconstruction, we also need important information like the gradient delay,
+    number of fids in each phase, etc. Note, this cannot be trivially read from the
+    twix object, and need to hard code some values. For example, the gradient delay
+    is slightly different depending on the scanner.
+    Args:
+        twix_obj: twix object returned from mapVBVD function
+    Returns:
+        TODO
+    """
+    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+    contrast_labels = np.zeros(raw_fids.shape[0])
+    set_labels = np.zeros(raw_fids.shape[0])
+    bonus_spectra_labels = (
+        np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
+    )
 
-    if flip_angle_dissolved == 20:
+    logging.info(get_TE(twix_obj,"multi_echo_2"))  
 
+    # extract number of bonus spectra
+    bonus_number_gas = get_bonus_number_gas(twix_obj, "multi_echo_2")
+    bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, "multi_echo_2")
+    bonus_number = bonus_number_gas + bonus_number_dissolved
 
-        if raw_fids.shape[0] == 4830 or raw_fids.shape[0] == 4030:
+    # set bonus spectra labels
+    number_of_echo = int(twix_obj.hdr.Phoenix[("alTR", "4")])
 
+    bonus_spectra_labels[-bonus_number:] = constants.BonusSpectraLabels.BONUS
+    contrast_labels[0:-bonus_number:5] = constants.ContrastLabels.GAS
+    contrast_labels[1:-bonus_number:5] = constants.ContrastLabels.GAS
+    contrast_labels[2:-bonus_number:5] = constants.ContrastLabels.DISSOLVED
+    contrast_labels[3:-bonus_number:5] = constants.ContrastLabels.DISSOLVED
+    contrast_labels[4:-bonus_number:5] = constants.ContrastLabels.DISSOLVED
+                
+    set_labels [-bonus_number:] = 1
+    set_labels[0:-bonus_number:5] = 1
+    set_labels[1:-bonus_number:5] = 2
+    set_labels[2:-bonus_number:5] = 1
+    set_labels[3:-bonus_number:5] = 2
+    set_labels[4:-bonus_number:5] = 3
 
-                # set bonus spectra labels
-
-                number_of_echo = 2;
-
-                bonus_spectra_labels[-30:] = constants.BonusSpectraLabels.BONUS
-                contrast_labels[0:-30:4] = constants.ContrastLabels.GAS
-                contrast_labels[1:-30:4] = constants.ContrastLabels.GAS
-                contrast_labels[2:-30:4] = constants.ContrastLabels.DISSOLVED
-                contrast_labels[3:-30:4] = constants.ContrastLabels.DISSOLVED
-
-               
-                set_labels [-30:] =1;
-                set_labels[0:-30:4] = 1
-                set_labels[1:-30:4] = 2
-                set_labels[2:-30:4] = 1
-                set_labels[3:-30:4] = 2
-
-
-                n_frames = int((raw_fids.shape[0] - 30) / 4)
-                data_gas = raw_fids[
-                    contrast_labels == constants.ContrastLabels.GAS
-                ]
-                data_dis = raw_fids[
-                    contrast_labels== constants.ContrastLabels.DISSOLVED
-                ]
-
-     
-        else:
-            raise ValueError("Cannot get data from normal dixon twix object.")
-    else:
-        raise ValueError("Cannot get data from twix object.")
+    n_frames = int((raw_fids.shape[0] - bonus_number) / 5)
+    data_gas = raw_fids[
+        contrast_labels == constants.ContrastLabels.GAS
+    ]
+    data_dis = raw_fids[
+        contrast_labels== constants.ContrastLabels.DISSOLVED
+    ]
 
     return {
         constants.IOFields.FIDS: raw_fids,

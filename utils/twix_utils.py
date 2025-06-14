@@ -314,6 +314,7 @@ def get_flipangle_gas(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str
 
     Args:
         twix_obj: twix object returned from mapVBVD function.
+        multi_echo_flag: multi-echo flag from config file
     Returns:
         flip angle in degrees. Returns 0.5 degrees if not found.
     """

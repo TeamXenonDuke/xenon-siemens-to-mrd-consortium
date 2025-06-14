@@ -10,6 +10,7 @@ import numpy as np
 import preprocessing as pp
 from config import base_config
 from utils import constants, io_utils, traj_utils
+import mapvbvd
 
 
 class Subject(object):
@@ -32,18 +33,20 @@ class Subject(object):
     def read_twix_files(self):
         """Read in twix files to dictionary, if they exist."""
         logging.info("Reading twix files.")
-        #try:
-        self.dict_dis = io_utils.read_dis_twix(
-            io_utils.get_dis_twix_files(str(self.config.data_dir)), self.config.multi_echo
-            )
-        self.dict_dis[constants.IOFields.SUBJECT_ID] = self.config.subject_id
-        self.dict_dis[constants.IOFields.GRAD_DELAY_X]= self.config.dixon.gradient_delay_x
-        self.dict_dis[constants.IOFields.GRAD_DELAY_Y]= self.config.dixon.gradient_delay_y
-        self.dict_dis[constants.IOFields.GRAD_DELAY_Z]= self.config.dixon.gradient_delay_z
+        try:
+            twix_file_location = io_utils.get_dis_twix_files(str(self.config.data_dir));
+            if self.config.multi_echo == "auto":
+                self.config.multi_echo = io_utils.auto_select_gx_protocol(twix_obj=mapvbvd.mapVBVD(twix_file_location))
+            self.dict_dis = io_utils.read_dis_twix(
+                twix_file_location, self.config.multi_echo
+                )
+            self.dict_dis[constants.IOFields.SUBJECT_ID] = self.config.subject_id
+            self.dict_dis[constants.IOFields.GRAD_DELAY_X]= self.config.dixon.gradient_delay_x
+            self.dict_dis[constants.IOFields.GRAD_DELAY_Y]= self.config.dixon.gradient_delay_y
+            self.dict_dis[constants.IOFields.GRAD_DELAY_Z]= self.config.dixon.gradient_delay_z
 
-
-        #except:
-        #    logging.info("Could not find/read Dixon file.")
+        except:
+            logging.info("Could not find/read Dixon file.")
 
         try:
             self.dict_dyn = io_utils.read_dyn_twix(

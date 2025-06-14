@@ -2,6 +2,7 @@
 
 import os
 import sys
+import logging
 
 sys.path.append("..")
 import csv
@@ -178,6 +179,26 @@ def get_mat_file(path: str) -> str:
     except:
         raise ValueError("Can't find mat file in path.")
 
+def auto_select_gx_protocol(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
+    """Automatically select the GX protocol type based on the length of alTR.
+
+    Uses the number of alTR entries to determine which reconstruction protocol to apply:
+    - 7: multi-echo with 2 echoes (multi_echo_2)
+    - 5: multi-echo with 3 echoes (multi_echo)
+    - 1: single-echo protocol
+    - Otherwise: raise error for manual selection
+    """
+    number_of_alTR = twix_utils.get_alTR(twix_obj);
+    if number_of_alTR == 0:
+        raise ValueError("Cannot automatically select GX protocol. Require manual selection")
+    elif number_of_alTR == 7:
+        return "multi_echo_2"
+    elif number_of_alTR == 5:
+        return "multi_echo"
+    elif number_of_alTR == 1:
+        return "single_echo"
+    else:
+        raise ValueError(f"Unrecognized length of alTR: {number_of_alTR}. Cannot automatically select GX protocol. Require manual selection")
 
 def read_dyn_twix(path: str) -> Dict[str, Any]:
     """Read dynamic spectroscopy twix file.
@@ -260,6 +281,7 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
     else:
         raise ValueError("Could not read gas exchange data.")
     filename = os.path.basename(path)
+    logging.info(multi_echo_flag)
 
     return {
         constants.IOFields.CONTRAST_LABELS: data_dict[
@@ -274,7 +296,7 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
         ],
         constants.IOFields.SAMPLE_TIME: twix_utils.get_dwell_time(twix_obj),
         constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj,multi_echo_flag),
-        constants.IOFields.FA_GAS: twix_utils.get_flipangle_gas(twix_obj),
+        constants.IOFields.FA_GAS: twix_utils.get_flipangle_gas(twix_obj,multi_echo_flag),
         constants.IOFields.FIELD_STRENGTH: twix_utils.get_field_strength(twix_obj),
         constants.IOFields.FIDS: data_dict[constants.IOFields.FIDS],
         constants.IOFields.FIDS_DIS: data_dict[constants.IOFields.FIDS_DIS],

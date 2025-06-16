@@ -183,8 +183,8 @@ def auto_select_gx_protocol(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     """Automatically select the GX protocol type based on the length of alTR.
 
     Uses the number of alTR entries to determine which reconstruction protocol to apply:
-    - 7: multi-echo with 2 echoes (multi_echo_2)
-    - 5: multi-echo with 3 echoes (multi_echo)
+    - 7: multi-echo with KUMC 3 echoes (multi_echo_2, gas_2 + dis_3)
+    - 5: multi-echo with LHC 2 echoes (multi_echo, gas_2 + dis_2)
     - 1: single-echo protocol
     - Otherwise: raise error for manual selection
     """

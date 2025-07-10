@@ -31,7 +31,7 @@ class Config(config_dict.ConfigDict):
         self.proton = Proton()
         self.data_dir = ""
         self.subject_id = "test"
-        self.multi_echo = False
+        self.multi_echo = "auto" # "single_echo", "multi_echo", or "multi_echo_2" or "auto"
 
 
 class Recon(object):

@@ -178,6 +178,3 @@ tmp/*
 config/*
 !config/base_config.py
 !config/demo_config.py
-!config/tests/
-config/tests/*
-!config/tests/*.py

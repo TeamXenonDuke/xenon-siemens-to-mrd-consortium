@@ -173,3 +173,8 @@ tmp/*
 
 # OS generated files
 .DS_Store
+
+# Config files -- only keep base and demo and ignore any .py files in config/test, if they exist. Modified from GX repo.
+config/*
+!config/base_config.py
+!config/demo_config.py

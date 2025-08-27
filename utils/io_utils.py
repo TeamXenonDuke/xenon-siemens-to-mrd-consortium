@@ -183,7 +183,8 @@ def auto_select_gx_protocol(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     """Automatically select the GX protocol type based on the length of alTR.
 
     Uses the number of alTR entries to determine which reconstruction protocol to apply:
-    - 7: multi-echo with KUMC 3 echoes (multi_echo_2, gas_2 + dis_3)
+    - 7: KUMC protocol
+        - check if single (single_echo_2) or 3 echo (multi_echo_2, gas_2 + dis_3)
     - 5: multi-echo with LHC 2 echoes (multi_echo, gas_2 + dis_2)
     - 1: single-echo protocol
     - Otherwise: raise error for manual selection
@@ -192,7 +193,11 @@ def auto_select_gx_protocol(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     if number_of_alTR == 0:
         raise ValueError("Cannot automatically select GX protocol. Require manual selection")
     elif number_of_alTR == 7:
-        return "multi_echo_2"
+        echo_number = int(twix_obj.hdr.Phoenix[("alTR","4")])
+        if echo_number == 1:
+            return "single_echo_2"
+        else:
+            return "multi_echo_2"
     elif number_of_alTR == 5:
         return "multi_echo"
     elif number_of_alTR == 1:
@@ -276,8 +281,8 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
         data_dict = twix_utils.get_gx_data_multi_echo_2(twix_obj=twix_obj)
     elif multi_echo_flag == "multi_echo":
         data_dict = twix_utils.get_gx_data_multi_echo(twix_obj=twix_obj)
-    elif multi_echo_flag == "single_echo":
-        data_dict = twix_utils.get_gx_data(twix_obj=twix_obj)
+    elif "single_echo" in multi_echo_flag:
+        data_dict = twix_utils.get_gx_data(twix_obj=twix_obj,multi_echo_flag=multi_echo_flag)
     else:
         raise ValueError("Could not read gas exchange data.")
     filename = os.path.basename(path)

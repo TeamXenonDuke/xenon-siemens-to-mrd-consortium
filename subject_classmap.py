@@ -34,7 +34,7 @@ class Subject(object):
         """Read in twix files to dictionary, if they exist."""
         logging.info("Reading twix files.")
         try:
-            twix_file_location = io_utils.get_dis_twix_files(str(self.config.data_dir));
+            twix_file_location = io_utils.get_dis_twix_files(str(self.config.data_dir))
             if self.config.multi_echo == "auto":
                 self.config.multi_echo = io_utils.auto_select_gx_protocol(twix_obj=mapvbvd.mapVBVD(twix_file_location))
             self.dict_dis = io_utils.read_dis_twix(

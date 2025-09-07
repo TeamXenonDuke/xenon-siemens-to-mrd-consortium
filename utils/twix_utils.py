@@ -9,7 +9,7 @@ from typing import Any, Dict
 
 import mapvbvd
 import numpy as np
-
+import os
 from utils import constants
 
 
@@ -277,7 +277,7 @@ def get_TE(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_
             ]
     elif multi_echo_flag == "multi_echo":
         return [twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3, twix_obj.hdr.Phoenix[("alTE", "1")] * 1e-3]
-    elif "single_echo" in multi_echo_flag:
+    elif multi_echo_flag == "single_echo":
         return twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3
     else:
         raise ValueError("Unable to find TE in twix object.")
@@ -293,7 +293,7 @@ def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_fla
         flip angle in degrees
     """
 
-    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo" or multi_echo_flag == "single_echo_2":
+    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo":
         try:
             return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "2")])
         except:
@@ -318,7 +318,7 @@ def get_flipangle_gas(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str
     Returns:
         flip angle in degrees. Returns 0.5 degrees if not found.
     """
-    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo" or multi_echo_flag == "single_echo_2":
+    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo":
         try:
             return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "1")])
         except:
@@ -484,7 +484,7 @@ def get_bonus_number_gas(
     """
     if multi_echo_flag == "single_echo" or multi_echo_flag == "multi_echo":
         bonus_number_gas = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "10")])
-    elif multi_echo_flag == "multi_echo_2" or multi_echo_flag == "single_echo_2":
+    elif multi_echo_flag == "multi_echo_2":
         bonus_number_gas = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")])
     else:
         raise ValueError("Unable to extract number of gas bonus spectra.")
@@ -505,15 +505,151 @@ def get_bonus_number_dissolved(
     """
     if multi_echo_flag == "single_echo" or multi_echo_flag == "multi_echo":
         bonus_number_dissolved = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "5")])
-    elif multi_echo_flag == "multi_echo_2" or multi_echo_flag == "single_echo_2":
+    elif multi_echo_flag == "multi_echo_2":
         bonus_number_dissolved = int(twix_obj.hdr.MeasYaps[("sWipMemBlock","adFree","3")])
     else:
         raise ValueError("Unable to extract number of dissolved bonus spectra.")
     
     return bonus_number_dissolved
 
+import numpy as np
+import mapvbvd
 
-def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> Dict[str, Any]:
+import numpy as np
+def read_long_spectra_uniform(twix_obj, min_complex=0, skip_complex=-1, dtype=np.complex64):
+    """
+    Read acquisitions from twix_obj.image that have at least `min_complex` complex samples.
+    Returns a uniform 2D array (N, Lmax) where Lmax is the max complex length after skipping.
+
+    Parameters
+    ----------
+    twix_obj : mapvbvd twix object
+    min_complex : int
+        Keep only acquisitions with >= min_complex complex samples.
+    skip_complex : int
+        Number of initial complex samples to skip (default 0).
+    dtype : np.dtype
+        Output complex dtype.
+    """
+
+    if skip_complex < 0 :
+        skip_complex = int(read_skip_points_twix(twix_obj));
+
+    img = twix_obj.image
+    if hasattr(img, "squeeze"):        img.squeeze = False
+    if hasattr(img, "flagRemoveOS"):   img.flagRemoveOS = False
+    if hasattr(img, "flagIgnoreSeg"):  img.flagIgnoreSeg = False
+    if hasattr(img, "flagDoAverage"):  img.flagDoAverage = False
+
+    mem   = img.memPos
+    finfo = img.freadInfo
+    szScanHeader = int(getattr(finfo, "szScanHeader", finfo.szScanHeader))
+    fname = img.filename
+    fsize = os.path.getsize(fname)
+
+    rows, lengths = [], []
+
+    with open(fname, "rb") as fid:
+        for i, off in enumerate(mem):
+            next_off = mem[i+1] if i+1 < len(mem) else fsize
+            if next_off <= off:
+                continue
+            payload_bytes = (next_off - off) - szScanHeader
+            n_complex = int(payload_bytes // (2*4))  # 2 floats per complex, 4 bytes each
+            if n_complex < min_complex:
+                continue
+
+            fid.seek(int(off + szScanHeader), 0)
+            arr = np.fromfile(fid, dtype=np.float32, count=n_complex*2)
+            if arr.size != n_complex*2:
+                continue
+            arr = arr.reshape(-1, 2)
+            cpx = (arr[:, 0] + 1j*arr[:, 1]).astype(dtype)
+
+            if skip_complex > 0 and cpx.size > skip_complex:
+                cpx = cpx[skip_complex:]
+
+            rows.append(cpx)
+            lengths.append(cpx.size)
+
+    if not rows:
+        return np.zeros((0, 0), dtype=dtype), np.zeros((0,), dtype=int)
+
+    lengths = np.asarray(lengths, dtype=int)
+    Lmax = int(lengths.max())
+    out = np.zeros((len(rows), Lmax), dtype=dtype)
+    for k, cpx in enumerate(rows):
+        out[k, :cpx.size] = cpx
+
+    return out.astype(np.cdouble)
+
+
+def read_skip_points_twix(twix_obj):
+    """
+    Read the cut offset value from a Dixon Twix object.
+
+    Args:
+        twix_obj: mapVBVD twix object (radial Dixon sequence with extra FIDs)
+
+    Returns:
+        int: Number of initial data points to skip (from readCut[0]).
+    """
+
+    # image resolution (half of data points = real/imag)
+    obj = twix_obj.image
+
+    # --- file reading setup ---
+    mem = obj.memPos             # byte offsets for each FID
+    szScanHeader = obj.freadInfo.szScanHeader
+    readSize     = list(obj.freadInfo.sz)
+    readCut      = list(obj.freadInfo.cut)
+
+ 
+    return readCut[0]
+
+
+def get_bonus_spectra_npoints(twix_obj):
+    """
+    Extract the number of data points per bonus spectrum from MeasYaps.
+
+    Args:
+        twix_obj: mapVBVD twix object
+
+    Returns:
+        int: Number of spectral points (complex samples).
+    """
+
+    # Direct access with tuple path keys
+    yaps = twix_obj.hdr.MeasYaps
+
+
+    if ('sWipMemBlock','adFree','8') in yaps:
+        spectReso   = int(yaps[('sWipMemBlock','adFree','8')])   # MATLAB {9}
+
+    elif ('sWiPMemBlock','adFree','8') in yaps:
+        spectReso   = int(yaps[('sWiPMemBlock','adFree','8')])
+
+    spectReso = spectReso*2; # Not sure why we need x2 here
+
+    return int(spectReso) 
+
+def get_gas_exchange_npoints(twix_obj):
+    """
+    Get the number of data points per gas-exchange acquisition.
+
+    Args:
+        twix_obj: mapVBVD twix object
+
+    Returns:
+        int: Base resolution of the acquisition (complex samples).
+    """
+
+    gxReso = twix_obj.hdr.Config["BaseResolution"]
+    return int(gxReso) 
+
+
+
+def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     """Get the dissolved phase and gas phase FIDs from twix object.
 
     For reconstruction, we also need important information like the gradient delay,
@@ -525,7 +661,7 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "si
     Returns:
         TODO
     """
-    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+    raw_fids = read_long_spectra_uniform(twix_obj)
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.ones(raw_fids.shape[0])
     bonus_spectra_labels = (
@@ -533,8 +669,8 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "si
     )
 
     # extract number of bonus spectra
-    bonus_number_gas = get_bonus_number_gas(twix_obj, multi_echo_flag)
-    bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, multi_echo_flag)
+    bonus_number_gas = get_bonus_number_gas(twix_obj, "single_echo")
+    bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, "single_echo")
     bonus_number = bonus_number_gas + bonus_number_dissolved
     bonus_position = get_bonus_spectra_position(twix_obj)  # returns "before" or "after"
 
@@ -588,6 +724,7 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "si
         constants.IOFields.NUMBER_OF_ECHO: 1,
     }
 
+
 def get_gx_data_multi_echo_old(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     """Get the dissolved phase and gas phase FIDs from twix object.
 
@@ -600,14 +737,12 @@ def get_gx_data_multi_echo_old(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str
     Returns:
         TODO
     """
-    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+    raw_fids = read_long_spectra_uniform(twix_obj)
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.zeros(raw_fids.shape[0])
     bonus_spectra_labels = (
         np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
     )
-
-    logging.info(get_TE(twix_obj,"multi_echo"))    
 
     # extract number of bonus spectra
     bonus_number_gas = get_bonus_number_gas(twix_obj, "multi_echo")
@@ -680,7 +815,9 @@ def get_gx_data_multi_echo_old(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str
 
 def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     """Get the dissolved phase and gas phase FIDs from twix object."""
-    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+
+    raw_fids = read_long_spectra_uniform(twix_obj)
+
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.zeros(raw_fids.shape[0])
     bonus_spectra_labels = (
@@ -776,7 +913,8 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
     Returns:
         TODO
     """
-    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+    
+    raw_fids = read_long_spectra_uniform(twix_obj)
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.zeros(raw_fids.shape[0])
     bonus_spectra_labels = (

@@ -121,7 +121,6 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         acquisition_header.number_of_samples = data_dict[constants.IOFields.N_POINTS]
         acquisition_header.active_channels = 1
         acquisition_header.trajectory_dimensions = 3
-        acquisition_header.sample_time_us = data_dict[constants.IOFields.SAMPLE_TIME]
         acquisition_header.idx.contrast = int(
             data_dict[constants.IOFields.CONTRAST_LABELS][acquisition_num]
         )
@@ -148,12 +147,14 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         # write acquisition FID data
 
         if (int(data_dict[constants.IOFields.BONUS_SPECTRA_LABELS][acquisition_num])==0):
+            acquisition_header.sample_time_us = data_dict[constants.IOFields.SAMPLE_TIME]
             n_points_writing = data_dict[constants.IOFields.N_POINTS]
             acquisition.resize(n_points_writing, 1)
             acquisition.data[:] = data_dict[constants.IOFields.FIDS][acquisition_num, :n_points_writing]
 
         else:
             n_points_writing= data_dict[constants.IOFields.N_POINTS_BONUS_SPECTRA];
+            acquisition_header.sample_time_us = data_dict[constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA]
             acquisition_header.number_of_samples = n_points_writing 
             acquisition.resize(n_points_writing, 1)
             acquisition.data[:]= data_dict[constants.IOFields.FIDS][acquisition_num, :n_points_writing ]

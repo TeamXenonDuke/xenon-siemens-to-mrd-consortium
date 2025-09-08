@@ -30,6 +30,7 @@ class IOFields(object):
     SET_LABELS = "set_labels"
     NUMBER_OF_ECHO = "number_of_echo"
     SAMPLE_TIME = "sample_time"
+    SAMPLE_TIME_BONUS_SPECTRA = "sample_time_bonus_spectra"
     FA_PROTON = "fa_proton"
     FA_DIS = "fa_dis"
     FA_GAS = "fa_gas"

@@ -70,6 +70,26 @@ def get_dwell_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
         pass
     raise ValueError("Could not find dwell time from twix object")
 
+def get_dwell_time_bonus_spectra(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> float:
+    """Get the dwell time in us.
+
+    Args:
+        twix_obj: twix object returned from mapVBVD function
+    Returns:
+        dwell time in us
+    """
+    if (multi_echo_flag == "single_echo" or multi_echo_flag == "multi_echo"):
+        try:
+            return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")]) * 0.5  #dwell time in us, divide 2 bc oversampling
+        except:
+            pass
+    if (multi_echo_flag == "multi_echo2"): 
+        try:
+            return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "14")]) * 0.5  #dwell time in us, divide 2 bc oversampling
+        except:
+            pass
+    raise ValueError("Could not find dwell time from twix object")
+
 
 def get_TR(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     """Get the TR in ms.

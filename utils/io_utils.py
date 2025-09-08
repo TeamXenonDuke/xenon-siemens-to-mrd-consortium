@@ -283,7 +283,6 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
     else:
         raise ValueError("Could not read gas exchange data.")
     filename = os.path.basename(path)
-    logging.info(multi_echo_flag)
 
     return {
         constants.IOFields.CONTRAST_LABELS: data_dict[
@@ -297,6 +296,7 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
             constants.IOFields.BONUS_SPECTRA_LABELS
         ],
         constants.IOFields.SAMPLE_TIME: twix_utils.get_dwell_time(twix_obj),
+        constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA: twix_utils.get_dwell_time_bonus_spectra(twix_obj,multi_echo_flag),
         constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj,multi_echo_flag),
         constants.IOFields.FA_GAS: twix_utils.get_flipangle_gas(twix_obj,multi_echo_flag),
         constants.IOFields.FIELD_STRENGTH: twix_utils.get_field_strength(twix_obj),

@@ -183,7 +183,8 @@ def auto_select_gx_protocol(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     """Automatically select the GX protocol type based on the length of alTR.
 
     Uses the number of alTR entries to determine which reconstruction protocol to apply:
-    - 7: multi-echo with KUMC 3 echoes (multi_echo_2, gas_2 + dis_3)
+    - 7: KUMC protocol
+        - check if single (single_echo_2) or 3 echo (multi_echo_2, gas_2 + dis_3)
     - 5: multi-echo with LHC 2 echoes (multi_echo, gas_2 + dis_2)
     - 1: single-echo protocol
     - Otherwise: raise error for manual selection
@@ -192,7 +193,11 @@ def auto_select_gx_protocol(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     if number_of_alTR == 0:
         raise ValueError("Cannot automatically select GX protocol. Require manual selection")
     elif number_of_alTR == 7:
-        return "multi_echo_2"
+        echo_number = int(twix_obj.hdr.Phoenix[("alTR","4")])
+        if echo_number == 1:
+            return "single_echo_2"
+        else:
+            return "multi_echo_2"
     elif number_of_alTR == 5:
         return "multi_echo"
     elif number_of_alTR == 1:
@@ -263,7 +268,6 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
     Returns:
         dictionary containing data and metadata extracted from the twix file.
     """
-
     try:
         twix_obj = mapvbvd.mapVBVD(path)
     except:
@@ -271,18 +275,18 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
     twix_obj.image.squeeze = True
     twix_obj.image.flagIgnoreSeg = True
     twix_obj.image.flagRemoveOS = False
-    
+
     # read gx data
     if multi_echo_flag == "multi_echo_2":
         data_dict = twix_utils.get_gx_data_multi_echo_2(twix_obj=twix_obj)
     elif multi_echo_flag == "multi_echo":
         data_dict = twix_utils.get_gx_data_multi_echo(twix_obj=twix_obj)
-    elif multi_echo_flag == "single_echo":
-
-        data_dict = twix_utils.get_gx_data(twix_obj=twix_obj)
+    elif "single_echo" in multi_echo_flag:
+        data_dict = twix_utils.get_gx_data(twix_obj=twix_obj,multi_echo_flag=multi_echo_flag)
     else:
         raise ValueError("Could not read gas exchange data.")
     filename = os.path.basename(path)
+    logging.info(multi_echo_flag)
 
     return {
         constants.IOFields.CONTRAST_LABELS: data_dict[
@@ -296,7 +300,6 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
             constants.IOFields.BONUS_SPECTRA_LABELS
         ],
         constants.IOFields.SAMPLE_TIME: twix_utils.get_dwell_time(twix_obj),
-        constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA: twix_utils.get_dwell_time_bonus_spectra(twix_obj,multi_echo_flag),
         constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj,multi_echo_flag),
         constants.IOFields.FA_GAS: twix_utils.get_flipangle_gas(twix_obj,multi_echo_flag),
         constants.IOFields.FIELD_STRENGTH: twix_utils.get_field_strength(twix_obj),
@@ -310,8 +313,7 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
         ),
         constants.IOFields.INSTITUTION: twix_utils.get_institution(twix_obj),
         constants.IOFields.N_FRAMES: data_dict[constants.IOFields.N_FRAMES],
-        constants.IOFields.N_POINTS: twix_utils.get_gas_exchange_npoints(twix_obj), 
-        constants.IOFields.N_POINTS_BONUS_SPECTRA :twix_utils.get_bonus_spectra_npoints(twix_obj),
+        constants.IOFields.N_POINTS: data_dict[constants.IOFields.FIDS].shape[1],
         constants.IOFields.ORIENTATION: twix_utils.get_orientation(twix_obj),
         constants.IOFields.PROTOCOL_NAME: twix_utils.get_protocol_name(twix_obj),
         constants.IOFields.RAMP_TIME: twix_utils.get_ramp_time(twix_obj),

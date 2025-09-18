@@ -297,7 +297,7 @@ def get_TE(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_
             ]
     elif multi_echo_flag == "multi_echo":
         return [twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3, twix_obj.hdr.Phoenix[("alTE", "1")] * 1e-3]
-    elif multi_echo_flag == "single_echo":
+    elif "single_echo" in multi_echo_flag:
         return twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3
     else:
         raise ValueError("Unable to find TE in twix object.")
@@ -313,7 +313,7 @@ def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_fla
         flip angle in degrees
     """
 
-    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo":
+    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo" or multi_echo_flag == "single_echo_2":
         try:
             return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "2")])
         except:
@@ -338,7 +338,7 @@ def get_flipangle_gas(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str
     Returns:
         flip angle in degrees. Returns 0.5 degrees if not found.
     """
-    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo":
+    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo" or multi_echo_flag == "single_echo_2":
         try:
             return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "1")])
         except:
@@ -504,7 +504,7 @@ def get_bonus_number_gas(
     """
     if multi_echo_flag == "single_echo" or multi_echo_flag == "multi_echo":
         bonus_number_gas = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "10")])
-    elif multi_echo_flag == "multi_echo_2":
+    elif multi_echo_flag == "multi_echo_2" or multi_echo_flag == "single_echo_2":
         bonus_number_gas = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")])
     else:
         raise ValueError("Unable to extract number of gas bonus spectra.")
@@ -525,7 +525,7 @@ def get_bonus_number_dissolved(
     """
     if multi_echo_flag == "single_echo" or multi_echo_flag == "multi_echo":
         bonus_number_dissolved = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "5")])
-    elif multi_echo_flag == "multi_echo_2":
+    elif multi_echo_flag == "multi_echo_2" or multi_echo_flag == "single_echo_2":
         bonus_number_dissolved = int(twix_obj.hdr.MeasYaps[("sWipMemBlock","adFree","3")])
     else:
         raise ValueError("Unable to extract number of dissolved bonus spectra.")
@@ -669,7 +669,7 @@ def get_gas_exchange_npoints(twix_obj):
 
 
 
-def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
+def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> Dict[str, Any]:
     """Get the dissolved phase and gas phase FIDs from twix object.
 
     For reconstruction, we also need important information like the gradient delay,
@@ -689,8 +689,8 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     )
 
     # extract number of bonus spectra
-    bonus_number_gas = get_bonus_number_gas(twix_obj, "single_echo")
-    bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, "single_echo")
+    bonus_number_gas = get_bonus_number_gas(twix_obj, multi_echo_flag)
+    bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, multi_echo_flag)
     bonus_number = bonus_number_gas + bonus_number_dissolved
     bonus_position = get_bonus_spectra_position(twix_obj)  # returns "before" or "after"
 
@@ -743,7 +743,6 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
         constants.IOFields.N_FRAMES: n_frames,
         constants.IOFields.NUMBER_OF_ECHO: 1,
     }
-
 
 def get_gx_data_multi_echo_old(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     """Get the dissolved phase and gas phase FIDs from twix object.

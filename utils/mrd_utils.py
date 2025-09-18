@@ -97,6 +97,7 @@ def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str):
 
     return ismrmrd_header
 
+
 def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
     """Write data from each FID acquisition according to 129Xe consortium specifications.
 
@@ -111,6 +112,7 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
 
     # initialize ismrmrd data set object
     ismrmrd_data_set = ismrmrd.Dataset(path, "dataset", create_if_needed=True)
+
     # write to acquisition and acquisition header for each FID acquisition
     for acquisition_num in range(data_dict[constants.IOFields.FIDS].shape[0]):
         # initialize acquisition object and acquisition header
@@ -121,6 +123,7 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         acquisition_header.number_of_samples = data_dict[constants.IOFields.N_POINTS]
         acquisition_header.active_channels = 1
         acquisition_header.trajectory_dimensions = 3
+        acquisition_header.sample_time_us = data_dict[constants.IOFields.SAMPLE_TIME]
         acquisition_header.idx.contrast = int(
             data_dict[constants.IOFields.CONTRAST_LABELS][acquisition_num]
         )
@@ -135,7 +138,7 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         )
 
         # set acquisition shape and hard code required acquisition fields
-        
+        acquisition.resize(data_dict[constants.IOFields.N_POINTS], 1)
         acquisition.version = 1
         acquisition.available_channels = 1
         acquisition.center_sample = 0
@@ -143,24 +146,12 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         acquisition.phase_dir[1] = 1.0
         acquisition.slice_dir[2] = 1.0
 
-    
-        # write acquisition FID data
-
-        if (int(data_dict[constants.IOFields.BONUS_SPECTRA_LABELS][acquisition_num])==0):
-            acquisition_header.sample_time_us = data_dict[constants.IOFields.SAMPLE_TIME]
-            n_points_writing = data_dict[constants.IOFields.N_POINTS]
-            acquisition.resize(n_points_writing, 1)
-            acquisition.data[:] = data_dict[constants.IOFields.FIDS][acquisition_num, :n_points_writing]
-
-        else:
-            n_points_writing= data_dict[constants.IOFields.N_POINTS_BONUS_SPECTRA];
-            acquisition_header.sample_time_us = data_dict[constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA]
-            acquisition_header.number_of_samples = n_points_writing 
-            acquisition.resize(n_points_writing, 1)
-            acquisition.data[:]= data_dict[constants.IOFields.FIDS][acquisition_num, :n_points_writing ]
-   
         # set acquisition header
         acquisition.setHead(acquisition_header)
+
+        # write acquisition FID data
+        acquisition.data[:] = data_dict[constants.IOFields.FIDS][acquisition_num, :]
+
         # write acquisition trajectory data
         if constants.IOFields.TRAJ in data_dict:
             if acquisition_num < data_dict[constants.IOFields.TRAJ].shape[0]:
@@ -171,8 +162,8 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         # append aquisition to ismrmrd data object
         ismrmrd_data_set.append_acquisition(acquisition)
 
-
     return ismrmrd_data_set
+
 
 
 def _write_scan_date(

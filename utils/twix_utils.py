@@ -9,7 +9,7 @@ from typing import Any, Dict
 
 import mapvbvd
 import numpy as np
-
+import os
 from utils import constants
 
 
@@ -68,6 +68,26 @@ def get_dwell_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
         return float(twix_obj.hdr.Meas.alDwellTime.split(" ")[0]) * 1e-3
     except:
         pass
+    raise ValueError("Could not find dwell time from twix object")
+
+def get_dwell_time_bonus_spectra(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> float:
+    """Get the dwell time in us.
+
+    Args:
+        twix_obj: twix object returned from mapVBVD function
+    Returns:
+        dwell time in us
+    """
+    if (multi_echo_flag == "single_echo" or multi_echo_flag == "multi_echo"):
+        try:
+            return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")]) * 0.5  #dwell time in us, divide 2 bc oversampling
+        except:
+            pass
+    if (multi_echo_flag == "multi_echo2"): 
+        try:
+            return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "14")]) * 0.5  #dwell time in us, divide 2 bc oversampling
+        except:
+            pass
     raise ValueError("Could not find dwell time from twix object")
 
 
@@ -512,6 +532,10 @@ def get_bonus_number_dissolved(
     
     return bonus_number_dissolved
 
+import numpy as np
+import mapvbvd
+
+import numpy as np
 def read_long_spectra_uniform(twix_obj, min_complex=0, skip_complex=-1, dtype=np.complex64):
     """
     Read acquisitions from twix_obj.image that have at least `min_complex` complex samples.
@@ -657,7 +681,7 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "si
     Returns:
         TODO
     """
-    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+    raw_fids = read_long_spectra_uniform(twix_obj)
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.ones(raw_fids.shape[0])
     bonus_spectra_labels = (
@@ -732,14 +756,12 @@ def get_gx_data_multi_echo_old(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str
     Returns:
         TODO
     """
-    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+    raw_fids = read_long_spectra_uniform(twix_obj)
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.zeros(raw_fids.shape[0])
     bonus_spectra_labels = (
         np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
     )
-
-    logging.info(get_TE(twix_obj,"multi_echo"))    
 
     # extract number of bonus spectra
     bonus_number_gas = get_bonus_number_gas(twix_obj, "multi_echo")
@@ -812,7 +834,9 @@ def get_gx_data_multi_echo_old(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str
 
 def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     """Get the dissolved phase and gas phase FIDs from twix object."""
-    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+
+    raw_fids = read_long_spectra_uniform(twix_obj)
+
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.zeros(raw_fids.shape[0])
     bonus_spectra_labels = (
@@ -908,7 +932,8 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
     Returns:
         TODO
     """
-    raw_fids = np.transpose(twix_obj.image.unsorted().astype(np.cdouble))
+    
+    raw_fids = read_long_spectra_uniform(twix_obj)
     contrast_labels = np.zeros(raw_fids.shape[0])
     set_labels = np.zeros(raw_fids.shape[0])
     bonus_spectra_labels = (

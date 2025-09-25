@@ -165,9 +165,10 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
         # set acquisition header
         acquisition.setHead(acquisition_header)
         # write acquisition trajectory data
-        if (int(data_dict[constants.IOFields.BONUS_SPECTRA_LABELS][acquisition_num])==0):
-            acquisition.traj[:] = data_dict[constants.IOFields.TRAJ][acquisition_num_imaging, :, :]
-            acquisition_num_imaging= acquisition_num_imaging+1;
+        if constants.IOFields.TRAJ in data_dict:
+            if (int(data_dict[constants.IOFields.BONUS_SPECTRA_LABELS][acquisition_num])==0):
+                acquisition.traj[:] = data_dict[constants.IOFields.TRAJ][acquisition_num_imaging, :, :]
+                acquisition_num_imaging= acquisition_num_imaging+1;
 
 
         # append aquisition to ismrmrd data object

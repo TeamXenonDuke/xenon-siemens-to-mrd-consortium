@@ -70,6 +70,7 @@ def get_dwell_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
         pass
     raise ValueError("Could not find dwell time from twix object")
 
+
 def get_dwell_time_bonus_spectra(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> float:
     """Get the dwell time in us.
 
@@ -83,12 +84,19 @@ def get_dwell_time_bonus_spectra(twix_obj: mapvbvd._attrdict.AttrDict, multi_ech
             return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")]) * 0.5  #dwell time in us, divide 2 bc oversampling
         except:
             pass
-    if (multi_echo_flag == "multi_echo2"): 
+    if (multi_echo_flag == "multi_echo_2"): 
         try:
             return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "14")]) * 0.5  #dwell time in us, divide 2 bc oversampling
         except:
             pass
+
+    if (multi_echo_flag == "single_echo_2"):
+        try:
+            return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")])  #dwell time in us, UAV don't need division by 2
+        except:
+            pass
     raise ValueError("Could not find dwell time from twix object")
+
 
 
 def get_TR(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
@@ -628,7 +636,7 @@ def read_skip_points_twix(twix_obj):
     return readCut[0]
 
 
-def get_bonus_spectra_npoints(twix_obj):
+def get_bonus_spectra_npoints(twix_obj, multi_echo_flag: str = "single_echo"):
     """
     Extract the number of data points per bonus spectrum from MeasYaps.
 
@@ -642,16 +650,20 @@ def get_bonus_spectra_npoints(twix_obj):
     # Direct access with tuple path keys
     yaps = twix_obj.hdr.MeasYaps
 
+    if multi_echo_flag != "single_echo_2":
+        if ('sWipMemBlock','adFree','8') in yaps:
+            spectReso   = int(yaps[('sWipMemBlock','adFree','8')])   # MATLAB {9}
 
-    if ('sWipMemBlock','adFree','8') in yaps:
-        spectReso   = int(yaps[('sWipMemBlock','adFree','8')])   # MATLAB {9}
+        elif ('sWiPMemBlock','adFree','8') in yaps:
+            spectReso   = int(yaps[('sWiPMemBlock','adFree','8')])
 
-    elif ('sWiPMemBlock','adFree','8') in yaps:
-        spectReso   = int(yaps[('sWiPMemBlock','adFree','8')])
-
-    spectReso = spectReso*2; # Not sure why we need x2 here
+        spectReso = spectReso*2; # Not sure why we need x2 here
+    else:
+        spectReso   = int(yaps[('sWipMemBlock','adFree','7')])  
+        spectReso = spectReso*2; # Not sure why we need x2 here
 
     return int(spectReso) 
+
 
 def get_gas_exchange_npoints(twix_obj):
     """

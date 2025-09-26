@@ -253,6 +253,8 @@ def get_prep_pulses(twix_obj: mapvbvd._attrdict.AttrDict) -> bool:
     try:
     	if twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "15"] > 0:
     		return True
+    	else:
+    		return False
     except:
     	return False
 

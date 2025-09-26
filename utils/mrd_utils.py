@@ -454,7 +454,7 @@ def _write_prep_pulses(
     """Write use of prep pulses to ismrmrdHeader.
     Args:
         ismrmrd_header (ismrmrdHeader): ismrmrdHeader
-        prep_pulses (bool): prep pulses exist prior to data acquisition
+        prep_pulses (str): prep pulses exist prior to data acquisition
     """
     if type(ismrmrd_header.userParameters) == type(None):
         ismrmrd_header.userParameters = ismrmrd.xsd.userParametersType()

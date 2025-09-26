@@ -431,12 +431,20 @@ def get_protocol_name(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     except:
         return "unknown"
 
-def get_bonus_spectra_position(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
+def get_bonus_spectra_position(twix_obj: mapvbvd._attrdict.AttrDict,fid_type: str) -> str:
     """Return bonus spectra position as string: 'before' or 'after'."""
-    try:
-        bonus_pos = int(twix_obj.hdr.sWipMemBlock.alFree[11])
-    except:
-        bonus_pos = 2  # default to 'after'
+    if fid_type == "dis":
+        try:
+            bonus_pos = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "alFree", "11")])
+        except:
+            bonus_pos = 2  # default to 'after'
+    elif fid_type == "gas":
+        try:
+            bonus_pos = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "alFree", "13")])
+        except:
+            bonus_pos = 2  # default to 'after'
+    else:
+        raise ValueError("Invalid FID type: must be 'gas' or 'dis'")
 
     return "before" if bonus_pos == 1 else "after"
 
@@ -704,11 +712,12 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "si
     bonus_number_gas = get_bonus_number_gas(twix_obj, multi_echo_flag)
     bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, multi_echo_flag)
     bonus_number = bonus_number_gas + bonus_number_dissolved
-    bonus_position = get_bonus_spectra_position(twix_obj)  # returns "before" or "after"
+    bonus_position_dis = get_bonus_spectra_position(twix_obj,"dis")  # returns "before" or "after"
+    bonus_position_gas = get_bonus_spectra_position(twix_obj,"gas")  # returns "before" or "after"
 
     # read in data
 
-    if bonus_position == "before":
+    if bonus_position_dis == "before" and bonus_position_gas == "before":
         contrast_labels[bonus_number::2] = constants.ContrastLabels.GAS
         contrast_labels[bonus_number+1::2] = constants.ContrastLabels.DISSOLVED
         contrast_labels[bonus_number_dissolved:bonus_number] = constants.ContrastLabels.GAS
@@ -725,7 +734,7 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "si
             contrast_labels[bonus_number:] == constants.ContrastLabels.DISSOLVED
         ]
 
-    elif bonus_position == "after":
+    elif bonus_position_dis == "after" and bonus_position_gas == "after":
         contrast_labels[0:-bonus_number:2] = constants.ContrastLabels.GAS
         contrast_labels[1:-bonus_number:2] = constants.ContrastLabels.DISSOLVED
         contrast_labels[-bonus_number_gas:] = constants.ContrastLabels.GAS
@@ -740,6 +749,42 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "si
         ]
         data_dis = raw_fids[:-bonus_number][
             contrast_labels[:-bonus_number] == constants.ContrastLabels.DISSOLVED
+        ]
+
+    elif bonus_position_dis == "before" and bonus_position_gas == "after":
+        contrast_labels[bonus_number_dissolved:-bonus_number_gas:2] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_dissolved+1:-bonus_number_gas:2] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[-bonus_number_gas:] = constants.ContrastLabels.GAS
+        contrast_labels[:bonus_number_dissolved] = constants.ContrastLabels.DISSOLVED
+
+        # set bonus spectra labels
+        bonus_spectra_labels[:bonus_number_dissolved] = constants.BonusSpectraLabels.BONUS
+        bonus_spectra_labels[-bonus_number_gas:] = constants.BonusSpectraLabels.BONUS
+
+        # extract gas and dissolved phase fids (minus bonus spectra)
+        data_gas = raw_fids[bonus_number_dissolved:-bonus_number_gas][
+            contrast_labels[bonus_number_dissolved:-bonus_number_gas] == constants.ContrastLabels.GAS
+        ]
+        data_dis = raw_fids[bonus_number_dissolved:-bonus_number_gas][
+            contrast_labels[bonus_number_dissolved:-bonus_number_gas] == constants.ContrastLabels.DISSOLVED
+        ]
+    
+    elif bonus_position_dis == "after" and bonus_position_gas == "before":
+        contrast_labels[bonus_number_gas:-bonus_number_dissolved:2] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_gas+1:-bonus_number_dissolved:2] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[:bonus_number_gas] = constants.ContrastLabels.GAS
+        contrast_labels[-bonus_number_dissolved:] = constants.ContrastLabels.DISSOLVED
+
+        # set bonus spectra labels
+        bonus_spectra_labels[:bonus_number_gas] = constants.BonusSpectraLabels.BONUS
+        bonus_spectra_labels[-bonus_number_dissolved:] = constants.BonusSpectraLabels.BONUS
+
+        # extract gas and dissolved phase fids (minus bonus spectra)
+        data_gas = raw_fids[bonus_number_gas:-bonus_number_dissolved][
+            contrast_labels[bonus_number_gas:-bonus_number_dissolved] == constants.ContrastLabels.GAS
+        ]
+        data_dis = raw_fids[bonus_number_gas:-bonus_number_dissolved][
+            contrast_labels[bonus_number_gas:-bonus_number_dissolved] == constants.ContrastLabels.DISSOLVED
         ]
 
     # define number of frames and gradient delay
@@ -859,7 +904,8 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
     bonus_number_gas = get_bonus_number_gas(twix_obj, "multi_echo")
     bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, "multi_echo")
     bonus_number = bonus_number_gas + bonus_number_dissolved
-    bonus_position = get_bonus_spectra_position(twix_obj)  # returns "before" or "after"
+    bonus_position_dis = get_bonus_spectra_position(twix_obj,"dis")  # returns "before" or "after"
+    bonus_position_gas = get_bonus_spectra_position(twix_obj,"gas")  # returns "before" or "after"
 
     echo_number = int(twix_obj.hdr.Phoenix[("alTR", "4")])
     
@@ -872,7 +918,7 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
 
     n_frames = int((raw_fids.shape[0] - bonus_number) / step)  
 
-    if bonus_position == "before":
+    if bonus_position_dis == "before" and bonus_position_gas == "before":
         bonus_spectra_labels[:bonus_number] = constants.BonusSpectraLabels.BONUS
         contrast_labels[:bonus_number_dissolved] = constants.ContrastLabels.DISSOLVED
         contrast_labels[bonus_number_dissolved:bonus_number] = constants.ContrastLabels.GAS
@@ -892,7 +938,7 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
         if step == 5:
             set_labels[bonus_number+4::step] = 3
 
-    elif bonus_position == "after":
+    elif bonus_position_dis == "after" and bonus_position_gas == "after":
         bonus_spectra_labels[-bonus_number:] = constants.BonusSpectraLabels.BONUS
         contrast_labels[-bonus_number_gas:] = constants.ContrastLabels.GAS
         contrast_labels[-bonus_number:-bonus_number_gas] = constants.ContrastLabels.DISSOLVED
@@ -911,6 +957,52 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
         set_labels[3:-bonus_number:step] = 2
         if step == 5:
             set_labels[4:-bonus_number:step] = 3
+    
+    elif bonus_position_dis == "before" and bonus_position_gas == "after":
+        bonus_spectra_labels[:bonus_number_dissolved] = constants.BonusSpectraLabels.BONUS
+        bonus_spectra_labels[-bonus_number_gas:] = constants.BonusSpectraLabels.BONUS
+        contrast_labels[:bonus_number_dissolved] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[-bonus_number_gas:] = constants.ContrastLabels.GAS
+
+        contrast_labels[bonus_number_dissolved:-bonus_number_gas:step] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_dissolved+1:-bonus_number_gas:step] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_dissolved+2:-bonus_number_gas:step] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[bonus_number_dissolved+3:-bonus_number_gas:step] = constants.ContrastLabels.DISSOLVED
+
+        if step == 5:
+            contrast_labels[bonus_number_dissolved:-bonus_number_gas:step] = constants.ContrastLabels.DISSOLVED
+
+        set_labels[:bonus_number_dissolved] = 1
+        set_labels[-bonus_number_gas:] = 1
+        set_labels[bonus_number_dissolved:-bonus_number_gas:step] = 1
+        set_labels[bonus_number_dissolved+1:-bonus_number_gas:step] = 2
+        set_labels[bonus_number_dissolved+2:-bonus_number_gas:step] = 1
+        set_labels[bonus_number_dissolved+3:-bonus_number_gas:step] = 2
+        if step == 5:
+            set_labels[bonus_number_dissolved+4:-bonus_number_gas:step] = 3
+    
+    elif bonus_position_dis == "after" and bonus_position_gas == "before":
+        bonus_spectra_labels[:bonus_number_gas] = constants.BonusSpectraLabels.BONUS
+        bonus_spectra_labels[-bonus_number_dissolved:] = constants.BonusSpectraLabels.BONUS
+        contrast_labels[-bonus_number_dissolved:] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[:bonus_number_gas] = constants.ContrastLabels.GAS
+
+        contrast_labels[bonus_number_gas:-bonus_number_dissolved:step] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_gas+1:-bonus_number_dissolved:step] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_gas+2:-bonus_number_dissolved:step] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[bonus_number_gas+3:-bonus_number_dissolved:step] = constants.ContrastLabels.DISSOLVED
+
+        if step == 5:
+            contrast_labels[bonus_number_gas:-bonus_number_dissolved:step] = constants.ContrastLabels.DISSOLVED
+
+        set_labels[:bonus_number_gas] = 1
+        set_labels[-bonus_number_dissolved:] = 1
+        set_labels[bonus_number_gas:-bonus_number_dissolved:step] = 1
+        set_labels[bonus_number_gas+1:-bonus_number_dissolved:step] = 2
+        set_labels[bonus_number_gas+2:-bonus_number_dissolved:step] = 1
+        set_labels[bonus_number_gas+3:-bonus_number_dissolved:step] = 2
+        if step == 5:
+            set_labels[bonus_number_gas+4:-bonus_number_dissolved:step] = 3
 
     data_gas = raw_fids[
         contrast_labels == constants.ContrastLabels.GAS
@@ -956,12 +1048,13 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
     bonus_number_gas = get_bonus_number_gas(twix_obj, "multi_echo_2")
     bonus_number_dissolved = get_bonus_number_dissolved(twix_obj, "multi_echo_2")
     bonus_number = bonus_number_gas + bonus_number_dissolved
-    bonus_position = get_bonus_spectra_position(twix_obj)  # returns "before" or "after"
+    bonus_position_dis = get_bonus_spectra_position(twix_obj,"dis") # returns "before" or "after"
+    bonus_position_gas = get_bonus_spectra_position(twix_obj,"gas") # returns "before" or "after"
 
     # set bonus spectra labels
     number_of_echo = int(twix_obj.hdr.Phoenix[("alTR", "4")])
  
-    if bonus_position == "before":
+    if bonus_position_dis == "before" and bonus_position_gas == "before":
         # set bonus spectra labels
         bonus_spectra_labels[:bonus_number] = constants.BonusSpectraLabels.BONUS
 
@@ -984,7 +1077,7 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         set_labels[bonus_number+3::5] = 2
         set_labels[bonus_number+4::5] = 3
 
-    elif bonus_position == "after":
+    elif bonus_position_dis == "after" and bonus_position_gas == "after":
         # set bonus spectra labels
         bonus_spectra_labels[-bonus_number:] = constants.BonusSpectraLabels.BONUS
 
@@ -1006,6 +1099,56 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         set_labels[2:-bonus_number:5] = 1
         set_labels[3:-bonus_number:5] = 2
         set_labels[4:-bonus_number:5] = 3
+    
+    elif bonus_position_dis == "before" and bonus_position_gas == "after":
+        # set bonus spectra labels
+        bonus_spectra_labels[:bonus_number_dissolved] = constants.BonusSpectraLabels.BONUS
+        bonus_spectra_labels[-bonus_number_gas:] = constants.BonusSpectraLabels.BONUS
+
+        # assign contrast labels for bonus spectra
+        contrast_labels[:bonus_number_dissolved] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[-bonus_number_gas:] = constants.ContrastLabels.GAS
+
+        # assign contrast labels for main data
+        contrast_labels[bonus_number_dissolved:-bonus_number_gas:5] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_dissolved+1:-bonus_number_gas:5] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_dissolved+2:-bonus_number_gas:5] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[bonus_number_dissolved+3:-bonus_number_gas:5] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[bonus_number_dissolved+4:-bonus_number_gas:5] = constants.ContrastLabels.DISSOLVED
+
+        # assign set labels
+        set_labels[:bonus_number_dissolved] = 1
+        set_labels[-bonus_number_gas:] = 1;
+        set_labels[bonus_number_dissolved:-bonus_number_gas:5] = 1
+        set_labels[bonus_number_dissolved+1:-bonus_number_gas:5] = 2
+        set_labels[bonus_number_dissolved+2:-bonus_number_gas:5] = 1
+        set_labels[bonus_number_dissolved+3:-bonus_number_gas:5] = 2
+        set_labels[bonus_number_dissolved+4:-bonus_number_gas:] = 3
+    
+    elif bonus_position_dis == "after" and bonus_position_gas == "before":
+        # set bonus spectra labels
+        bonus_spectra_labels[:bonus_number_gas] = constants.BonusSpectraLabels.BONUS
+        bonus_spectra_labels[-bonus_number_dissolved:] = constants.BonusSpectraLabels.BONUS
+
+        # assign contrast labels for bonus spectra
+        contrast_labels[-bonus_number_dissolved:] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[:bonus_number_gas] = constants.ContrastLabels.GAS
+
+        # assign contrast labels for main data
+        contrast_labels[bonus_number_gas:-bonus_number_dissolved:5] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_gas+1:-bonus_number_dissolved:5] = constants.ContrastLabels.GAS
+        contrast_labels[bonus_number_gas+2:-bonus_number_dissolved:5] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[bonus_number_gas+3:-bonus_number_dissolved:5] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[bonus_number_gas+4:-bonus_number_dissolved:5] = constants.ContrastLabels.DISSOLVED
+
+        # assign set labels
+        set_labels[-bonus_number_dissolved:] = 1
+        set_labels[:bonus_number_gas] = 1
+        set_labels[bonus_number_gas:-bonus_number_dissolved:5] = 1
+        set_labels[bonus_number_gas+1:-bonus_number_dissolved:5] = 2
+        set_labels[bonus_number_gas+2:-bonus_number_dissolved:5] = 1
+        set_labels[bonus_number_gas+3:-bonus_number_dissolved:5] = 2
+        set_labels[bonus_number_gas+4:-bonus_number_dissolved:] = 3
 
     n_frames = int((raw_fids.shape[0] - bonus_number) / 5)
     data_gas = raw_fids[

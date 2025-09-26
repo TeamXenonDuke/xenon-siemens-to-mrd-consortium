@@ -239,6 +239,22 @@ def get_ramp_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
         pass
 
     return max(100, ramp_time) if ramp_time < 100 else ramp_time
+    
+def get_prep_pulses(twix_obj: mapvbvd._attrdict.AttrDict) -> bool:
+    """Indicates the use of prep pulses prior to data acquisition.
+    
+    Returns false by default.
+    
+    Args:
+    	twix_obj: twix object returned from mapVBVD function.
+    Returns:
+    	flag indicating prep pulses were used
+    """
+    try:
+    	if twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "15"] > 0:
+    		return True
+    except:
+    	return False
 
 
 def get_flag_removeOS(twix_obj: mapvbvd._attrdict.AttrDict) -> bool:

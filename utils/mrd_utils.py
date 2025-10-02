@@ -34,6 +34,7 @@ def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str):
     _write_field_strength(ismrmrd_header, data_dict[constants.IOFields.FIELD_STRENGTH])
     _write_te(ismrmrd_header, data_dict[constants.IOFields.TE])
     _write_fov(ismrmrd_header, data_dict[constants.IOFields.FOV])
+    _write_prep_pulses(ismrmrd_header, data_dict[constants.IOFields.PREP_PULSES])
 
     # write scan-specific header variables
     if scan_type == "calibration":
@@ -445,3 +446,21 @@ def _write_orientation(
     )
     orientation_obj.value = orientation
     ismrmrd_header.userParameters.userParameterString.insert(0, orientation_obj)
+    
+def _write_prep_pulses(
+    ismrmrd_header: ismrmrd.xsd.ismrmrdschema.ismrmrd.ismrmrdHeader,
+    prep_pulses: str,
+):
+    """Write use of prep pulses to ismrmrdHeader.
+    Args:
+        ismrmrd_header (ismrmrdHeader): ismrmrdHeader
+        prep_pulses (str): prep pulses exist prior to data acquisition
+    """
+    if type(ismrmrd_header.userParameters) == type(None):
+        ismrmrd_header.userParameters = ismrmrd.xsd.userParametersType()
+        
+    prep_pulses_obj = ismrmrd.xsd.userParameterStringType(
+    	constants.IOFields.PREP_PULSES
+    )
+    prep_pulses_obj.value = prep_pulses
+    ismrmrd_header.userParameters.userParameterString.insert(0,prep_pulses_obj)

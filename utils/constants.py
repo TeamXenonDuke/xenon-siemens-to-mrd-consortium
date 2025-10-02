@@ -62,6 +62,7 @@ class IOFields(object):
     N_POINTS_BONUS_SPECTRA  = "n_points_bonus_spectra"
     ORIENTATION = "orientation"
     PIPELINE_VERSION = "pipeline_version"
+    PREP_PULSES = "prep_pulses"
     PROCESS_DATE = "process_date"
     PROTOCOL_NAME = "protocol_name"
     RAMP_TIME = "ramp_time"

@@ -456,11 +456,11 @@ def _write_prep_pulses(
         ismrmrd_header (ismrmrdHeader): ismrmrdHeader
         prep_pulses (str): prep pulses exist prior to data acquisition
     """
-    if type(ismrmrd_header.userParameters) == type(None):
-        ismrmrd_header.userParameters = ismrmrd.xsd.userParametersType()
+    if type(ismrmrd_header.sequenceParameters) == type(None):
+        ismrmrd_header.sequenceParameters = ismrmrd.xsd.sequenceParametersType()
         
-    prep_pulses_obj = ismrmrd.xsd.userParameterStringType(
+    prep_pulses_obj = ismrmrd.xsd.sequenceParameterStringType(
     	constants.IOFields.PREP_PULSES
     )
     prep_pulses_obj.value = prep_pulses
-    ismrmrd_header.userParameters.userParameterString.insert(0,prep_pulses_obj)
+    ismrmrd_header.sequenceParameters.sequenceParameterString.insert(0,prep_pulses_obj)

@@ -676,7 +676,7 @@ def get_bonus_spectra_npoints(twix_obj, multi_echo_flag: str = "single_echo"):
     # Direct access with tuple path keys
     yaps = twix_obj.hdr.MeasYaps
 
-    if multi_echo_flag != "single_echo_2":
+    if multi_echo_flag != "single_echo_2" and multi_echo_flag != "multi_echo_2":
         if ('sWipMemBlock','adFree','8') in yaps:
             spectReso   = int(yaps[('sWipMemBlock','adFree','8')])   # MATLAB {9}
 

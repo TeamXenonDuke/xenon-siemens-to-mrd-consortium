@@ -52,6 +52,54 @@ def get_institution(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     return twix_obj.hdr.Dicom.InstitutionName
 
 
+def get_patient_weight(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
+    """Get patient weight
+    
+    Args:
+        twix_obj: twix object returned from mapVBVD function
+    Returns:
+        patient weight in kg
+    """
+    return twix_obj.hdr.Dicom.flUsedPatientWeight
+
+
+def get_patient_height(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
+    """Get patient height
+    
+    Args:
+        twix_obj: twix object returned from mapVBVD function
+    Returns:
+        patient height in mm
+    """
+    return twix_obj.hdr.Dicom.flPatientHeight
+
+
+def get_patient_birthday(twix_obj: mapvbvd.attrdict.AttrDict) -> str:
+    """Get patient birthday
+    
+    Args:
+        twix_obj: twix object returned from mapVBVD function
+    Returns:
+        patient birthday as a string
+    """
+    return twix_obj.hdr.Config.PatientBirthDay
+
+
+def get_patient_sex(twix_obj: mapvbvd.attrdict.AttrDict) -> str:
+    """Get patient sex
+    
+    Args: 
+        twix_obj: twix object returned from mapVBVD function
+    Returns:
+        patient sex
+    """
+    patient_sex = twix_obj.hdr.Config.PatientSex
+    if patient_sex == 1:
+        return "female"
+    elif patient_sex == 2:
+        return "male"
+
+
 def get_dwell_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     """Get the dwell time in us.
 

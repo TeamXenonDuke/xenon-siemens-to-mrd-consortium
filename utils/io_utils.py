@@ -258,6 +258,10 @@ def read_dyn_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.TR_GAS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.TR_DIS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
+        constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj),
+        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj),
+        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj),
+        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj),
     }
 
 
@@ -332,6 +336,10 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
         ),
         constants.IOFields.NUMBER_OF_ECHO: data_dict[constants.IOFields.NUMBER_OF_ECHO],
         constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
+        constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj),
+        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj),
+        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj),
+        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj),
     }
 
 def read_ute_twix(path: str) -> Dict[str, Any]:
@@ -389,6 +397,10 @@ def read_ute_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.TE: twix_utils.get_TE(twix_obj),
         constants.IOFields.TR_PROTON: twix_utils.get_TR(twix_obj),
         constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
+        constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj),
+        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj),
+        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj),
+        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj),
     }
 
 

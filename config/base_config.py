@@ -32,6 +32,7 @@ class Config(config_dict.ConfigDict):
         self.data_dir = ""
         self.subject_id = "test"
         self.multi_echo = "auto" # "single_echo", "single_echo_2", "multi_echo", or "multi_echo_2" or "auto"
+        self.patient_demographics = False 
 
 
 class Recon(object):

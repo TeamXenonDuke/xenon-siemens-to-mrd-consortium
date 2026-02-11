@@ -40,7 +40,7 @@ def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str, demographics
     if demographics_flag:
         print("writing demographics")
         _write_patient_birthday(ismrmrd_header, data_dict[constants.IOFields.PATIENT_BIRTHDAY])
-        #_write_patient_height(ismrmrd_header, data_dict[constants.IOFields.PATIENT_HEIGHT])
+        _write_patient_height(ismrmrd_header, data_dict[constants.IOFields.PATIENT_HEIGHT])
         #_write_patient_sex(ismrmrd_header, data_dict[constants.IOFields.PATIENT_SEX])
         #_write_patient_weight(ismrmrd_header, data_dict[constants.IOFields.PATIENT_WEIGHT])
 
@@ -481,3 +481,12 @@ def _write_patient_birthday(
         ismrmrd_header.subjectInformation = ismrmrd.xsd.subjectInformationType()
         
     ismrmrd_header.subjectInformation.patientBirthdate = patient_birthday
+
+def _write_patient_height(
+    ismrmrd_header: ismrmrd.xsd.ismrmrdschema.ismrmrd.ismrmrdHeader,
+    patient_height: float,
+):
+    if type(ismrmrd_header.subjectInformation) == type(None):
+        ismrmrd_header.subjectInformation = ismrmrd.xsd.subjectInformationType()
+        
+    ismrmrd_header.subjectInformation.patientHeight_m = patient_height/1000 # mm to m

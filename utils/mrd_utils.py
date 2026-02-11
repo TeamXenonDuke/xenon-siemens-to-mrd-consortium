@@ -10,7 +10,7 @@ sys.path.append("..")
 from utils import constants
 
 
-def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str):
+def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str, demographics_flag: bool):
     """Write ismrmrdHeader according to 129Xe consortium specifications.
 
     Args:
@@ -35,6 +35,14 @@ def write_ismrmrd_header(data_dict: Dict[str, Any], scan_type: str):
     _write_te(ismrmrd_header, data_dict[constants.IOFields.TE])
     _write_fov(ismrmrd_header, data_dict[constants.IOFields.FOV])
     _write_prep_pulses(ismrmrd_header, data_dict[constants.IOFields.PREP_PULSES])
+
+    # write optional demographics to header
+    if demographics_flag:
+        print("writing demographics")
+        _write_patient_birthday(ismrmrd_header, data_dict[constants.IOFields.PATIENT_BIRTHDAY])
+        #_write_patient_height(ismrmrd_header, data_dict[constants.IOFields.PATIENT_HEIGHT])
+        #_write_patient_sex(ismrmrd_header, data_dict[constants.IOFields.PATIENT_SEX])
+        #_write_patient_weight(ismrmrd_header, data_dict[constants.IOFields.PATIENT_WEIGHT])
 
     # write scan-specific header variables
     if scan_type == "calibration":
@@ -464,3 +472,12 @@ def _write_prep_pulses(
     )
     prep_pulses_obj.value = prep_pulses
     ismrmrd_header.userParameters.userParameterString.insert(0,prep_pulses_obj)
+
+def _write_patient_birthday(
+    ismrmrd_header: ismrmrd.xsd.ismrmrdschema.ismrmrd.ismrmrdHeader,
+    patient_birthday: str,
+):
+    if type(ismrmrd_header.subjectInformation) == type(None):
+        ismrmrd_header.subjectInformation = ismrmrd.xsd.subjectInformationType()
+        
+    ismrmrd_header.subjectInformation.patientBirthdate = patient_birthday

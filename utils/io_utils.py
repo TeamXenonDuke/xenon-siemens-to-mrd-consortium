@@ -259,9 +259,9 @@ def read_dyn_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.TR_DIS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
         constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj),
-        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj),
-        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj),
-        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj),
+        # constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj),
+        # constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj),
+        # constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj),
     }
 
 
@@ -414,7 +414,7 @@ def export_np(arr: np.ndarray, path: str):
     np.save(path, arr)
 
 
-def write_mrd_file(path: str, data_dict: Dict[str, Any], scan_type: str):
+def write_mrd_file(path: str, data_dict: Dict[str, Any], scan_type: str, demographics_flag: bool):
     """Write MRD file according to consortium specifications.
 
     Args:
@@ -430,7 +430,7 @@ def write_mrd_file(path: str, data_dict: Dict[str, Any], scan_type: str):
     ismrmrd_data_set = mrd_utils.write_acquisition_data(path, data_dict)
 
     # write ismrmrd header
-    ismrmrd_header = mrd_utils.write_ismrmrd_header(data_dict, scan_type)
+    ismrmrd_header = mrd_utils.write_ismrmrd_header(data_dict, scan_type, demographics_flag)
     ismrmrd_data_set.write_xml_header(ismrmrd.xsd.ToXML(ismrmrd_header))
 
     # close ismrmrd data file

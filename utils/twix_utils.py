@@ -74,18 +74,27 @@ def get_patient_height(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     return twix_obj.hdr.Dicom.flPatientHeight
 
 
-def get_patient_birthday(twix_obj: mapvbvd.attrdict.AttrDict) -> str:
-    """Get patient birthday
+def get_patient_birthday(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
+    """Get patient birthday (rough estimate using Jan 01 for given birth year)
     
     Args:
         twix_obj: twix object returned from mapVBVD function
     Returns:
         patient birthday as a string
     """
-    return twix_obj.hdr.Config.PatientBirthDay
+    patient_age = int(twix_obj.hdr.Dicom.flPatientAge)
+    print(patient_age)
+    scan_date = get_scan_date(twix_obj=twix_obj)
+    print(scan_date)
+    scan_year = int(scan_date[:4])
+    print(scan_year)
+    patient_birthday = str(scan_year-patient_age) + "-01-01"
+    print(patient_birthday)
+    
+    return patient_birthday
 
 
-def get_patient_sex(twix_obj: mapvbvd.attrdict.AttrDict) -> str:
+def get_patient_sex(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     """Get patient sex
     
     Args: 

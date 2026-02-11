@@ -82,7 +82,7 @@ def get_patient_birthday(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     Returns:
         patient birthday as a string
     """
-    patient_age = twix_obj.hdr.Dicom.flPatientAge
+    patient_age = int(twix_obj.hdr.Dicom.flPatientAge)
     scan_date = get_scan_date(twix_obj=twix_obj)
     scan_year = int(scan_date[:4])
     patient_birthday = str(scan_year-patient_age) + "-01-01"

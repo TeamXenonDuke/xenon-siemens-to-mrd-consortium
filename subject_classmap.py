@@ -110,6 +110,7 @@ class Subject(object):
                 path=os.path.join("tmp", "{}_dixon.h5".format(self.config.subject_id)),
                 data_dict=self.dict_dis,
                 scan_type="dixon",
+                demographics_flag=self.config.patient_demographics,
             )
         if bool(self.dict_dyn):
             io_utils.write_mrd_file(
@@ -118,6 +119,7 @@ class Subject(object):
                 ),
                 data_dict=self.dict_dyn,
                 scan_type="calibration",
+                demographics_flag=self.config.patient_demographics,
             )
 
         if bool(self.dict_proton):
@@ -125,6 +127,7 @@ class Subject(object):
                 path=os.path.join("tmp", "{}_proton.h5".format(self.config.subject_id)),
                 data_dict=self.dict_proton,
                 scan_type="proton",
+                demographics_flag=self.config.patient_demographics,
             )
 
     def move_output_files(self):

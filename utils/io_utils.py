@@ -334,7 +334,8 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
         constants.IOFields.BANDWIDTH: twix_utils.get_bandwidth(
             twix_obj, data_dict, filename
         ),
-        constants.IOFields.NUMBER_OF_ECHO: data_dict[constants.IOFields.NUMBER_OF_ECHO],
+        constants.IOFields.N_ECHO_DIS: data_dict[constants.IOFields.N_ECHO_DIS],
+        constants.IOFields.N_ECHO_GAS: data_dict[constants.IOFields.N_ECHO_GAS],
         constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
         constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj),
         constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj),

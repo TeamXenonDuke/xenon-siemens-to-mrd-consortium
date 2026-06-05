@@ -1122,7 +1122,8 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
     bonus_position_gas = get_bonus_spectra_position(twix_obj,"gas") # returns "before" or "after"
 
     # set bonus spectra labels
-    number_of_echo = int(twix_obj.hdr.Phoenix[("alTR", "4")])
+    n_echo_dis = int(twix_obj.hdr.Phoenix[("alTR", "4")])
+    n_echo_gas = int(twix_obj.hdr.Phoenix[("alTR", "3")])
  
     if bonus_position_dis == "before" and bonus_position_gas == "before":
         # set bonus spectra labels
@@ -1236,7 +1237,8 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         constants.IOFields.SET_LABELS: set_labels,
         constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: n_frames,
-        constants.IOFields.NUMBER_OF_ECHO: number_of_echo
+        constants.IOFields.N_ECHO_DIS: n_echo_dis,
+        constants.IOFields.N_ECHO_GAS: n_echo_gas
     }
 
 

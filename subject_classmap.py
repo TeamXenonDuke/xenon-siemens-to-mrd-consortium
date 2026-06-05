@@ -81,7 +81,8 @@ class Subject(object):
                 traj = pp.prepare_traj_interleaved_multi_echo(
                     self.dict_dis,
                     generate_traj=True,
-                    number_of_echo = self.dict_dis[constants.IOFields.NUMBER_OF_ECHO],
+                    n_echo_dis = self.dict_dis[constants.IOFields.N_ECHO_DIS],
+                    n_echo_gas = self.dict_dis[constants.IOFields.N_ECHO_GAS],
                 )
             else:
                 traj = pp.prepare_traj_interleaved(

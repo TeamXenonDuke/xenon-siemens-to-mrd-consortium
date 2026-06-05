@@ -868,7 +868,8 @@ def get_gx_data(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "si
         constants.IOFields.SET_LABELS: set_labels,
         constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: n_frames,
-        constants.IOFields.NUMBER_OF_ECHO: 1,
+        constants.IOFields.N_ECHO_DIS: 1,
+        constants.IOFields.N_ECHO_GAS: 1
     }
 
 def get_gx_data_multi_echo_old(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
@@ -955,7 +956,8 @@ def get_gx_data_multi_echo_old(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str
         constants.IOFields.SET_LABELS: set_labels,
         constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: n_frames,
-        constants.IOFields.NUMBER_OF_ECHO: 2
+        constants.IOFields.N_ECHO_DIS: 2,
+        constants.IOFields.N_ECHO_GAS: 2
     }
 
 
@@ -1089,7 +1091,8 @@ def get_gx_data_multi_echo(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, An
         constants.IOFields.SET_LABELS: set_labels,
         constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
         constants.IOFields.N_FRAMES: n_frames,
-        constants.IOFields.NUMBER_OF_ECHO: echo_number
+        constants.IOFields.N_ECHO_DIS: echo_number,
+        constants.IOFields.N_ECHO_GAS: echo_number
     }
 
 
@@ -1124,6 +1127,7 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
     # set bonus spectra labels
     n_echo_dis = int(twix_obj.hdr.Phoenix[("alTR", "4")])
     n_echo_gas = int(twix_obj.hdr.Phoenix[("alTR", "3")])
+    step = n_echo_dis + n_echo_gas
  
     if bonus_position_dis == "before" and bonus_position_gas == "before":
         # set bonus spectra labels
@@ -1134,19 +1138,17 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         contrast_labels[bonus_number_dissolved:bonus_number] = constants.ContrastLabels.GAS
 
         # assign contrast labels for main data
-        contrast_labels[bonus_number::5] = constants.ContrastLabels.GAS
-        contrast_labels[bonus_number+1::5] = constants.ContrastLabels.GAS
-        contrast_labels[bonus_number+2::5] = constants.ContrastLabels.DISSOLVED
-        contrast_labels[bonus_number+3::5] = constants.ContrastLabels.DISSOLVED
-        contrast_labels[bonus_number+4::5] = constants.ContrastLabels.DISSOLVED
+        for i in range(n_echo_gas):
+            contrast_labels[bonus_number+i::step] = constants.ContrastLabels.GAS
+        for i in range (n_echo_gas,n_echo_gas + n_echo_dis):
+            contrast_labels[bonus_number+i::step] = constants.ContrastLabels.DISSOLVED
 
         # assign set labels
         set_labels[:bonus_number] = 1
-        set_labels[bonus_number::5] = 1
-        set_labels[bonus_number+1::5] = 2
-        set_labels[bonus_number+2::5] = 1
-        set_labels[bonus_number+3::5] = 2
-        set_labels[bonus_number+4::5] = 3
+        for i in range(n_echo_gas):
+            set_labels[bonus_number+i::step] = i+1
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis): 
+            set_labels[bonus_number+i::step] = (i-n_echo_gas) + 1
 
     elif bonus_position_dis == "after" and bonus_position_gas == "after":
         # set bonus spectra labels
@@ -1157,19 +1159,17 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         contrast_labels[-bonus_number:-bonus_number_gas] = constants.ContrastLabels.DISSOLVED
 
          # assign contrast labels for main data
-        contrast_labels[0:-bonus_number:5] = constants.ContrastLabels.GAS
-        contrast_labels[1:-bonus_number:5] = constants.ContrastLabels.GAS
-        contrast_labels[2:-bonus_number:5] = constants.ContrastLabels.DISSOLVED
-        contrast_labels[3:-bonus_number:5] = constants.ContrastLabels.DISSOLVED
-        contrast_labels[4:-bonus_number:5] = constants.ContrastLabels.DISSOLVED
+        for i in range(n_echo_gas):
+            contrast_labels[i:-bonus_number:step] = constants.ContrastLabels.GAS
+        for i in range (n_echo_gas,n_echo_gas + n_echo_dis):
+            contrast_labels[i:-bonus_number:step] = constants.ContrastLabels.DISSOLVED
         
-        # assign set labels       
-        set_labels [-bonus_number:] = 1
-        set_labels[0:-bonus_number:5] = 1
-        set_labels[1:-bonus_number:5] = 2
-        set_labels[2:-bonus_number:5] = 1
-        set_labels[3:-bonus_number:5] = 2
-        set_labels[4:-bonus_number:5] = 3
+        # assign set labels   
+        set_labels[-bonus_number:] = 1
+        for i in range(n_echo_gas):
+            set_labels[i:-bonus_number:step] = i+1
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis): 
+            set_labels[i:-bonus_number:step] = (i-n_echo_gas) + 1    
     
     elif bonus_position_dis == "before" and bonus_position_gas == "after":
         # set bonus spectra labels
@@ -1181,20 +1181,18 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         contrast_labels[-bonus_number_gas:] = constants.ContrastLabels.GAS
 
         # assign contrast labels for main data
-        contrast_labels[bonus_number_dissolved:-bonus_number_gas:5] = constants.ContrastLabels.GAS
-        contrast_labels[bonus_number_dissolved+1:-bonus_number_gas:5] = constants.ContrastLabels.GAS
-        contrast_labels[bonus_number_dissolved+2:-bonus_number_gas:5] = constants.ContrastLabels.DISSOLVED
-        contrast_labels[bonus_number_dissolved+3:-bonus_number_gas:5] = constants.ContrastLabels.DISSOLVED
-        contrast_labels[bonus_number_dissolved+4:-bonus_number_gas:5] = constants.ContrastLabels.DISSOLVED
+        for i in range(n_echo_gas):
+            contrast_labels[bonus_number_dissolved+i:-bonus_number_gas:step] = constants.ContrastLabels.GAS
+        for i in range (n_echo_gas,n_echo_gas + n_echo_dis):
+            contrast_labels[bonus_number_dissolved+i:-bonus_number_gas:step] = constants.ContrastLabels.DISSOLVED
 
         # assign set labels
         set_labels[:bonus_number_dissolved] = 1
-        set_labels[-bonus_number_gas:] = 1;
-        set_labels[bonus_number_dissolved:-bonus_number_gas:5] = 1
-        set_labels[bonus_number_dissolved+1:-bonus_number_gas:5] = 2
-        set_labels[bonus_number_dissolved+2:-bonus_number_gas:5] = 1
-        set_labels[bonus_number_dissolved+3:-bonus_number_gas:5] = 2
-        set_labels[bonus_number_dissolved+4:-bonus_number_gas:] = 3
+        set_labels[-bonus_number_gas:] = 1
+        for i in range(n_echo_gas):
+            set_labels[bonus_number_dissolved+i:-bonus_number_gas:step] = i+1
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis): 
+            set_labels[bonus_number_dissolved+i:-bonus_number_gas:step] = (i-n_echo_gas) + 1
     
     elif bonus_position_dis == "after" and bonus_position_gas == "before":
         # set bonus spectra labels
@@ -1206,20 +1204,18 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         contrast_labels[:bonus_number_gas] = constants.ContrastLabels.GAS
 
         # assign contrast labels for main data
-        contrast_labels[bonus_number_gas:-bonus_number_dissolved:5] = constants.ContrastLabels.GAS
-        contrast_labels[bonus_number_gas+1:-bonus_number_dissolved:5] = constants.ContrastLabels.GAS
-        contrast_labels[bonus_number_gas+2:-bonus_number_dissolved:5] = constants.ContrastLabels.DISSOLVED
-        contrast_labels[bonus_number_gas+3:-bonus_number_dissolved:5] = constants.ContrastLabels.DISSOLVED
-        contrast_labels[bonus_number_gas+4:-bonus_number_dissolved:5] = constants.ContrastLabels.DISSOLVED
+        for i in range(n_echo_gas):
+            contrast_labels[bonus_number_gas+i:-bonus_number_dissolved:step] = constants.ContrastLabels.GAS
+        for i in range (n_echo_gas,n_echo_gas + n_echo_dis):
+            contrast_labels[bonus_number_gas+i:-bonus_number_dissolved:step] = constants.ContrastLabels.DISSOLVED
 
         # assign set labels
         set_labels[-bonus_number_dissolved:] = 1
-        set_labels[:bonus_number_gas] = 1
-        set_labels[bonus_number_gas:-bonus_number_dissolved:5] = 1
-        set_labels[bonus_number_gas+1:-bonus_number_dissolved:5] = 2
-        set_labels[bonus_number_gas+2:-bonus_number_dissolved:5] = 1
-        set_labels[bonus_number_gas+3:-bonus_number_dissolved:5] = 2
-        set_labels[bonus_number_gas+4:-bonus_number_dissolved:] = 3
+        set_labels[:bonus_number_gas:] = 1
+        for i in range(n_echo_gas):
+            set_labels[bonus_number_gas+i:-bonus_number_dissolved:step] = i+1
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis): 
+            set_labels[bonus_number_gas+i:-bonus_number_dissolved:step] = (i-n_echo_gas) + 1
 
     n_frames = int((raw_fids.shape[0] - bonus_number) / 5)
     data_gas = raw_fids[

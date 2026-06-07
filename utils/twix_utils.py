@@ -1140,7 +1140,7 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         # assign contrast labels for main data
         for i in range(n_echo_gas):
             contrast_labels[bonus_number+i::n_echoes] = constants.ContrastLabels.GAS
-        for i in range (n_echo_gas,n_echo_gas + n_echo_dis):
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis):
             contrast_labels[bonus_number+i::n_echoes] = constants.ContrastLabels.DISSOLVED
 
         # assign set labels
@@ -1161,7 +1161,7 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
          # assign contrast labels for main data
         for i in range(n_echo_gas):
             contrast_labels[i:-bonus_number:n_echoes] = constants.ContrastLabels.GAS
-        for i in range (n_echo_gas,n_echo_gas + n_echo_dis):
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis):
             contrast_labels[i:-bonus_number:n_echoes] = constants.ContrastLabels.DISSOLVED
         
         # assign set labels   
@@ -1183,7 +1183,7 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         # assign contrast labels for main data
         for i in range(n_echo_gas):
             contrast_labels[bonus_number_dissolved+i:-bonus_number_gas:n_echoes] = constants.ContrastLabels.GAS
-        for i in range (n_echo_gas,n_echo_gas + n_echo_dis):
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis):
             contrast_labels[bonus_number_dissolved+i:-bonus_number_gas:n_echoes] = constants.ContrastLabels.DISSOLVED
 
         # assign set labels
@@ -1206,7 +1206,7 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         # assign contrast labels for main data
         for i in range(n_echo_gas):
             contrast_labels[bonus_number_gas+i:-bonus_number_dissolved:n_echoes] = constants.ContrastLabels.GAS
-        for i in range (n_echo_gas,n_echo_gas + n_echo_dis):
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis):
             contrast_labels[bonus_number_gas+i:-bonus_number_dissolved:n_echoes] = constants.ContrastLabels.DISSOLVED
 
         # assign set labels

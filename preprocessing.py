@@ -151,30 +151,18 @@ def prepare_traj_interleaved_multi_echo(
     # stack trajectory
     traj_dis = np.stack([traj_x, traj_y, traj_z], axis=-1)
     traj_gas = np.copy(traj_dis)
-    if n_echo_dis == 2:
-        # interleave gas and dissolved trajectories
-        traj = np.zeros((traj_dis.shape[0] * n_echo_dis * 2, traj_dis.shape[1], traj_dis.shape[2]))
-        for i in range(traj_dis.shape[0]):
 
-            for echo_index in range(n_echo_dis*2):
-                if (echo_index%2 == 0):
-                    traj[n_echo_dis*2 * i+echo_index, :, :] = traj_gas[i, :, :]
-                else:
-                    traj[n_echo_dis*2 * i+echo_index, :, :] = traj_dis[i, :, :]
+    # write trajectories for multiple echoes
+    n_echoes = n_echo_gas + n_echo_dis
+    traj = np.zeros((traj_dis.shape[0] * n_echoes, traj_dis.shape[1], traj_dis.shape[2]))
+    for i in range(traj_dis.shape[0]):
 
-        return traj
-    elif n_echo_dis == 3:
-        # interleave gas and dissolved trajectories
-        traj = np.zeros((traj_dis.shape[0] * 5, traj_dis.shape[1], traj_dis.shape[2]))
-        for i in range(traj_dis.shape[0]):
+        for echo_index in range(n_echo_gas):
+            traj[n_echoes * i+echo_index, :, :] = traj_gas[i, :, :]
+        for echo_index in range(n_echo_gas,n_echo_gas + n_echo_dis): 
+            traj[n_echoes * i+echo_index, :, :] = traj_dis[i, :, :]
 
-            for echo_index in range(5):
-                if (echo_index%2 == 0):
-                    traj[5 * i+echo_index, :, :] = traj_gas[i, :, :]
-                else:
-                    traj[5 * i+echo_index, :, :] = traj_dis[i, :, :]
-
-        return traj
+    return traj
 
 
 

@@ -112,7 +112,10 @@ def prepare_traj_interleaved(
     return traj
 
 def prepare_traj_interleaved_multi_echo(
-    data_dict: Dict[str, Any], generate_traj: bool = True, number_of_echo: int = 1
+    data_dict: Dict[str, Any], 
+    generate_traj: bool = True, 
+    n_echo_dis: int = 1, 
+    n_echo_gas: int = 1
 ) -> Tuple[np.ndarray, ...]:
     """Prepare data and trajectory for interleaved data reconstruction.
 
@@ -148,30 +151,18 @@ def prepare_traj_interleaved_multi_echo(
     # stack trajectory
     traj_dis = np.stack([traj_x, traj_y, traj_z], axis=-1)
     traj_gas = np.copy(traj_dis)
-    if number_of_echo == 2:
-        # interleave gas and dissolved trajectories
-        traj = np.zeros((traj_dis.shape[0] * number_of_echo * 2, traj_dis.shape[1], traj_dis.shape[2]))
-        for i in range(traj_dis.shape[0]):
 
-            for echo_index in range(number_of_echo*2):
-                if (echo_index%2 == 0):
-                    traj[number_of_echo*2 * i+echo_index, :, :] = traj_gas[i, :, :]
-                else:
-                    traj[number_of_echo*2 * i+echo_index, :, :] = traj_dis[i, :, :]
+    # write trajectories for multiple echoes
+    n_echoes = n_echo_gas + n_echo_dis
+    traj = np.zeros((traj_dis.shape[0] * n_echoes, traj_dis.shape[1], traj_dis.shape[2]))
+    for i in range(traj_dis.shape[0]):
 
-        return traj
-    elif number_of_echo == 3:
-        # interleave gas and dissolved trajectories
-        traj = np.zeros((traj_dis.shape[0] * 5, traj_dis.shape[1], traj_dis.shape[2]))
-        for i in range(traj_dis.shape[0]):
+        for echo_index in range(n_echo_gas):
+            traj[n_echoes * i+echo_index, :, :] = traj_gas[i, :, :]
+        for echo_index in range(n_echo_gas,n_echo_gas + n_echo_dis): 
+            traj[n_echoes * i+echo_index, :, :] = traj_dis[i, :, :]
 
-            for echo_index in range(5):
-                if (echo_index%2 == 0):
-                    traj[5 * i+echo_index, :, :] = traj_gas[i, :, :]
-                else:
-                    traj[5 * i+echo_index, :, :] = traj_dis[i, :, :]
-
-        return traj
+    return traj
 
 
 

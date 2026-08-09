@@ -16,6 +16,9 @@ class Config(config_dict.ConfigDict):
     Attributes:
         data_dir (str): path to the data directory
         subject_id (str): the subject id
+        multi_echo (str): flag for echo structure 
+            (auto, single_echo, single_echo_2, multi_echo, or multi_echo_2)
+        patient_demographics (bool): flag whether to write demographics to MRD header
         recon (Recon): object containing reconstruction configurations for trajectory generation
         calibration (Calibration); object containing calibration sequence configurations
         dixon (Dixon): object containing Dixon sequence configurations
@@ -31,8 +34,14 @@ class Config(config_dict.ConfigDict):
         self.proton = Proton()
         self.data_dir = ""
         self.subject_id = "test"
-        self.multi_echo = "auto" # "single_echo", "single_echo_2", "multi_echo", or "multi_echo_2" or "auto"
-        self.patient_demographics = False 
+        self.multi_echo = "auto"
+        self.patient_demographics = False
+
+        # Manual demographics input (optional)
+        self.patient_height_mm = np.nan
+        self.patient_weight_kg = np.nan
+        self.patient_age = np.nan
+        self.patient_sex = ""
 
 
 class Recon(object):

@@ -37,9 +37,7 @@ class Subject(object):
             twix_file_location = io_utils.get_dis_twix_files(str(self.config.data_dir))
             if self.config.multi_echo == "auto":
                 self.config.multi_echo = io_utils.auto_select_gx_protocol(twix_obj=mapvbvd.mapVBVD(twix_file_location))
-            self.dict_dis = io_utils.read_dis_twix(
-                twix_file_location, self.config.multi_echo
-                )
+            self.dict_dis = io_utils.read_dis_twix(twix_file_location, self.config)
             self.dict_dis[constants.IOFields.SUBJECT_ID] = self.config.subject_id
             self.dict_dis[constants.IOFields.GRAD_DELAY_X]= self.config.dixon.gradient_delay_x
             self.dict_dis[constants.IOFields.GRAD_DELAY_Y]= self.config.dixon.gradient_delay_y
@@ -49,17 +47,15 @@ class Subject(object):
             logging.info("Could not find/read Dixon file.")
 
         try:
-            self.dict_dyn = io_utils.read_dyn_twix(
-                io_utils.get_dyn_twix_files(str(self.config.data_dir))
-            )
+            twix_file_location = io_utils.get_dyn_twix_files(str(self.config.data_dir))
+            self.dict_dyn = io_utils.read_dyn_twix(twix_file_location,self.config)
             self.dict_dyn[constants.IOFields.SUBJECT_ID] = self.config.subject_id
         except:
             logging.info("Could not find/read calibration file.")
 
         try:
-            self.dict_proton = io_utils.read_ute_twix(
-                io_utils.get_ute_twix_files(str(self.config.data_dir))
-            )
+            twix_file_location = io_utils.get_ute_twix_files(str(self.config.data_dir))
+            self.dict_proton = io_utils.read_ute_twix(twix_file_location,self.config)
             self.dict_proton[constants.IOFields.SUBJECT_ID] = self.config.subject_id
             self.dict_proton[constants.IOFields.GRAD_DELAY_X]= self.config.proton.gradient_delay_x
             self.dict_proton[constants.IOFields.GRAD_DELAY_Y]= self.config.proton.gradient_delay_y

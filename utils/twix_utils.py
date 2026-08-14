@@ -102,7 +102,7 @@ def get_patient_birthday(twix_obj: mapvbvd._attrdict.AttrDict, config) -> str:
     scan_year = int(scan_date[:4])
 
     try:
-        patient_age = config.patient_age
+        patient_age = int(config.patient_age)
     except:
         patient_age = np.nan
     
@@ -133,7 +133,7 @@ def get_patient_sex(twix_obj: mapvbvd._attrdict.AttrDict, config) -> str:
         elif patient_sex == 2:
             return "male"
 
-    return patient_sex.lower()
+    return patient_sex
 
 
 def get_dwell_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:

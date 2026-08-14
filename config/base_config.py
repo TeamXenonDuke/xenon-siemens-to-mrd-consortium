@@ -19,6 +19,12 @@ class Config(config_dict.ConfigDict):
         multi_echo (str): flag for echo structure 
             (auto, single_echo, single_echo_2, multi_echo, or multi_echo_2)
         patient_demographics (bool): flag whether to write demographics to MRD header
+        patient_height_mm (float): manual input for patient height in mm (optional)
+        patient_weight_kg (float): manual input for patient weight in kg (optional)
+        patient_age (int): manual input for patient age in years (optional)
+        patient_gender_key (str): manual input for patient gender (optional)
+            NONE (default, uses twix header), FEMALE, MALE, OTHER
+
         recon (Recon): object containing reconstruction configurations for trajectory generation
         calibration (Calibration); object containing calibration sequence configurations
         dixon (Dixon): object containing Dixon sequence configurations
@@ -37,11 +43,11 @@ class Config(config_dict.ConfigDict):
         self.multi_echo = "auto"
         self.patient_demographics = False
 
-        # Manual demographics input (optional)
+        # Manual demographics input (optional), default values prompt usage of twix header
         self.patient_height_mm = np.nan
         self.patient_weight_kg = np.nan
         self.patient_age = np.nan
-        self.patient_sex = ""
+        self.patient_gender_key = constants.GenderKey.NONE.value
 
 
 class Recon(object):

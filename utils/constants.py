@@ -123,6 +123,14 @@ class SystemVendor(enum.Enum):
     SIEMENS = "siemens"
 
 
+class GenderKey(enum.Enum): 
+    """Subject gender"""
+    FEMALE = "F"
+    MALE = "M"
+    OTHER = "O"
+    NONE = ""
+
+
 class TrajType(object):
     """Trajectory type."""
 

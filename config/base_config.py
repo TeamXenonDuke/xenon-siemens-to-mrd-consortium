@@ -24,20 +24,11 @@ class Config(config_dict.ConfigDict):
         patient_age (int): manual input for patient age in years (optional)
         patient_gender_key (str): manual input for patient gender (optional)
             NONE (default, uses twix header), FEMALE, MALE, OTHER
-
-        recon (Recon): object containing reconstruction configurations for trajectory generation
-        calibration (Calibration); object containing calibration sequence configurations
-        dixon (Dixon): object containing Dixon sequence configurations
-        proton (Proton): object containing proton sequence configurations
     """
 
     def __init__(self):
         """Initialize config parameters."""
         super().__init__()
-        self.recon = Recon()
-        self.calibration = Calibration()
-        self.dixon = Dixon()
-        self.proton = Proton()
         self.data_dir = ""
         self.subject_id = "test"
         self.multi_echo = "auto"
@@ -48,6 +39,12 @@ class Config(config_dict.ConfigDict):
         self.patient_weight_kg = np.nan
         self.patient_age = np.nan
         self.patient_gender_key = constants.GenderKey.NONE.value
+
+        # Load parameters in config
+        self.recon = Recon()
+        self.calibration = Calibration()
+        self.dixon = Dixon()
+        self.proton = Proton()
 
 
 class Recon(object):

@@ -38,7 +38,7 @@ class Config(config_dict.ConfigDict):
         self.patient_height_mm = np.nan
         self.patient_weight_kg = np.nan
         self.patient_age = np.nan
-        self.patient_sex = constants.GenderKey.NONE.value
+        self.patient_sex = constants.PatientSexKey.NONE.value
 
         # Load parameters in config
         self.recon = Recon()

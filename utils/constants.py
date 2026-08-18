@@ -123,8 +123,8 @@ class SystemVendor(enum.Enum):
     SIEMENS = "siemens"
 
 
-class GenderKey(enum.Enum): 
-    """Subject gender"""
+class PatientSexKey(enum.Enum): 
+    """Subject sex"""
     FEMALE = "F"
     MALE = "M"
     OTHER = "O"

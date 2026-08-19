@@ -52,7 +52,7 @@ def get_institution(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     return twix_obj.hdr.Dicom.InstitutionName
 
 
-def get_patient_weight(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
+def get_patient_weight(twix_obj: mapvbvd._attrdict.AttrDict, config) -> float:
     """Get patient weight
     
     Args:
@@ -60,10 +60,18 @@ def get_patient_weight(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     Returns:
         patient weight in kg
     """
-    return twix_obj.hdr.Dicom.flUsedPatientWeight
+    try:
+        patient_weight = config.patient_weight_kg
+    except:
+        patient_weight = np.nan
+
+    if np.isnan(patient_weight):
+        return twix_obj.hdr.Dicom.flUsedPatientWeight
+
+    return patient_weight
 
 
-def get_patient_height(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
+def get_patient_height(twix_obj: mapvbvd._attrdict.AttrDict, config) -> float:
     """Get patient height
     
     Args:
@@ -71,10 +79,18 @@ def get_patient_height(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     Returns:
         patient height in mm
     """
-    return twix_obj.hdr.Dicom.flPatientHeight
+    try:
+        patient_height = config.patient_height_mm
+    except:
+        patient_height = np.nan
+
+    if np.isnan(patient_height):
+        return twix_obj.hdr.Dicom.flPatientHeight
+
+    return patient_height
 
 
-def get_patient_birthday(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
+def get_patient_birthday(twix_obj: mapvbvd._attrdict.AttrDict, config) -> str:
     """Get patient birthday (rough estimate using Jan 01 for given birth year)
     
     Args:
@@ -82,14 +98,22 @@ def get_patient_birthday(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     Returns:
         patient birthday as a string
     """
-    patient_age = int(twix_obj.hdr.Dicom.flPatientAge)
     scan_date = get_scan_date(twix_obj=twix_obj)
     scan_year = int(scan_date[:4])
-    patient_birthday = str(scan_year-patient_age) + "-01-01"
-    return patient_birthday
+
+    try:
+        patient_age = int(config.patient_age)
+    except:
+        patient_age = np.nan
+    
+    if np.isnan(patient_age):
+        patient_age = int(twix_obj.hdr.Dicom.flPatientAge)
+        return str(scan_year-patient_age) + "-01-01"
+
+    return str(scan_year-patient_age) + "-01-01"
 
 
-def get_patient_sex(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
+def get_patient_sex(twix_obj: mapvbvd._attrdict.AttrDict, config) -> str:
     """Get patient sex
     
     Args: 
@@ -97,11 +121,19 @@ def get_patient_sex(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     Returns:
         patient sex
     """
-    patient_sex = twix_obj.hdr.Config.PatientSex
-    if patient_sex == 1:
-        return "female"
-    elif patient_sex == 2:
-        return "male"
+    try:
+        patient_sex = config.patient_sex
+    except:
+        patient_sex = ""
+    
+    if not patient_sex.strip():
+        patient_sex = twix_obj.hdr.Config.PatientSex
+        if patient_sex == 1:
+            return "female"
+        elif patient_sex == 2:
+            return "male"
+
+    return patient_sex
 
 
 def get_dwell_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
@@ -303,10 +335,10 @@ def get_prep_pulses(twix_obj: mapvbvd._attrdict.AttrDict) -> bool:
     	flag indicating prep pulses were used
     """
     try:
-    	if twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "15"] > 0:
-    		return True
-    	else:
-    		return False
+        if twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "15"] > 0:
+            return True
+        else:
+            return False
     except:
     	return False
 

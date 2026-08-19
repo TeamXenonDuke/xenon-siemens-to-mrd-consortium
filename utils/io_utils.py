@@ -205,7 +205,10 @@ def auto_select_gx_protocol(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     else:
         raise ValueError(f"Unrecognized length of alTR: {number_of_alTR}. Cannot automatically select GX protocol. Require manual selection")
 
-def read_dyn_twix(path: str) -> Dict[str, Any]:
+def read_dyn_twix(
+        path: str,
+        config: Optional[config_dict.ConfigDict] = None
+    ) -> Dict[str, Any]:
     """Read dynamic spectroscopy twix file.
 
     Args:
@@ -258,14 +261,17 @@ def read_dyn_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.TR_GAS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.TR_DIS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
-        constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj),
-        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj),
-        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj),
-        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj),
+        constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj, config),
+        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj, config),
+        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj, config),
+        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj, config),
     }
 
 
-def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, Any]:
+def read_dis_twix(
+        path: str, 
+        config: Optional[config_dict.ConfigDict] = None
+    ) -> Dict[str, Any]:
     """Read dixon disssolved phase imaging twix file.
 
     Args:
@@ -283,12 +289,12 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
     twix_obj.image.flagRemoveOS = False
     
     # read gx data
-    if multi_echo_flag == "multi_echo_2":
+    if config.multi_echo == "multi_echo_2":
         data_dict = twix_utils.get_gx_data_multi_echo_2(twix_obj=twix_obj)
-    elif multi_echo_flag == "multi_echo":
+    elif config.multi_echo == "multi_echo":
         data_dict = twix_utils.get_gx_data_multi_echo(twix_obj=twix_obj)
-    elif "single_echo" in multi_echo_flag:
-        data_dict = twix_utils.get_gx_data(twix_obj=twix_obj,multi_echo_flag=multi_echo_flag)
+    elif "single_echo" in config.multi_echo:
+        data_dict = twix_utils.get_gx_data(twix_obj=twix_obj,multi_echo_flag=config.multi_echo)
     else:
         raise ValueError("Could not read gas exchange data.")
     filename = os.path.basename(path)
@@ -305,9 +311,9 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
             constants.IOFields.BONUS_SPECTRA_LABELS
         ],
         constants.IOFields.SAMPLE_TIME: twix_utils.get_dwell_time(twix_obj),
-        constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA: twix_utils.get_dwell_time_bonus_spectra(twix_obj,multi_echo_flag),
-        constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj,multi_echo_flag),
-        constants.IOFields.FA_GAS: twix_utils.get_flipangle_gas(twix_obj,multi_echo_flag),
+        constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA: twix_utils.get_dwell_time_bonus_spectra(twix_obj,config.multi_echo),
+        constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj,config.multi_echo),
+        constants.IOFields.FA_GAS: twix_utils.get_flipangle_gas(twix_obj,config.multi_echo),
         constants.IOFields.FIELD_STRENGTH: twix_utils.get_field_strength(twix_obj),
         constants.IOFields.FIDS: data_dict[constants.IOFields.FIDS],
         constants.IOFields.FIDS_DIS: data_dict[constants.IOFields.FIDS_DIS],
@@ -320,7 +326,7 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
         constants.IOFields.INSTITUTION: twix_utils.get_institution(twix_obj),
         constants.IOFields.N_FRAMES: data_dict[constants.IOFields.N_FRAMES],
         constants.IOFields.N_POINTS: twix_utils.get_gas_exchange_npoints(twix_obj), 
-        constants.IOFields.N_POINTS_BONUS_SPECTRA :twix_utils.get_bonus_spectra_npoints(twix_obj,multi_echo_flag),
+        constants.IOFields.N_POINTS_BONUS_SPECTRA :twix_utils.get_bonus_spectra_npoints(twix_obj,config.multi_echo),
         constants.IOFields.ORIENTATION: twix_utils.get_orientation(twix_obj),
         constants.IOFields.PROTOCOL_NAME: twix_utils.get_protocol_name(twix_obj),
         constants.IOFields.RAMP_TIME: twix_utils.get_ramp_time(twix_obj),
@@ -328,7 +334,7 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
         constants.IOFields.SCAN_DATE: twix_utils.get_scan_date(twix_obj),
         constants.IOFields.SYSTEM_VENDOR: twix_utils.get_system_vendor(twix_obj),
         constants.IOFields.SOFTWARE_VERSION: twix_utils.get_software_version(twix_obj),
-        constants.IOFields.TE: twix_utils.get_TE(twix_obj,multi_echo_flag),
+        constants.IOFields.TE: twix_utils.get_TE(twix_obj,config.multi_echo),
         constants.IOFields.TR_GAS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.TR_DIS: twix_utils.get_TR_dissolved(twix_obj),
         constants.IOFields.BANDWIDTH: twix_utils.get_bandwidth(
@@ -337,13 +343,16 @@ def read_dis_twix(path: str, multi_echo_flag: str = "single_echo") -> Dict[str, 
         constants.IOFields.N_ECHO_DIS: data_dict[constants.IOFields.N_ECHO_DIS],
         constants.IOFields.N_ECHO_GAS: data_dict[constants.IOFields.N_ECHO_GAS],
         constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
-        constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj),
-        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj),
-        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj),
-        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj),
+        constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj, config),
+        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj, config),
+        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj, config),
+        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj, config),
     }
 
-def read_ute_twix(path: str) -> Dict[str, Any]:
+def read_ute_twix(
+        path: str,
+        config: Optional[config_dict.ConfigDict] = None
+    ) -> Dict[str, Any]:
     """Read proton ute imaging twix file.
 
     Args:
@@ -398,10 +407,10 @@ def read_ute_twix(path: str) -> Dict[str, Any]:
         constants.IOFields.TE: twix_utils.get_TE(twix_obj),
         constants.IOFields.TR_PROTON: twix_utils.get_TR(twix_obj),
         constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
-        constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj),
-        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj),
-        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj),
-        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj),
+        constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj, config),
+        constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj, config),
+        constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj, config),
+        constants.IOFields.PATIENT_WEIGHT: twix_utils.get_patient_weight(twix_obj, config),
     }
 
 

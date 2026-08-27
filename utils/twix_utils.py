@@ -129,9 +129,9 @@ def get_patient_sex(twix_obj: mapvbvd._attrdict.AttrDict, config) -> str:
     if not patient_sex.strip():
         patient_sex = twix_obj.hdr.Config.PatientSex
         if patient_sex == 1:
-            return "female"
+            return "F"
         elif patient_sex == 2:
-            return "male"
+            return "M"
 
     return patient_sex
 

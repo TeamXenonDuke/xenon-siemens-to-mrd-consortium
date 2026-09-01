@@ -131,4 +131,4 @@ class Subject(object):
         """Move output files into dedicated directory."""
         logging.info("Moving output files to subject directory.")
         output_files = glob.glob("tmp/*.h5")
-        io_utils.move_files(output_files, self.config.data_dir)
+        io_utils.move_files(output_files, os.path.join(self.config.data_dir, "mrd"))

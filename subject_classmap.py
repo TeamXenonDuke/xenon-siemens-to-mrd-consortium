@@ -26,7 +26,8 @@ class Subject(object):
     def __init__(self, config: base_config.Config):
         """Init object."""
         self.config = config
-        self.dict_dis = {}
+        self.dict_dis1 = {}
+        self.dict_dis2 = {}
         self.dict_dyn = {}
         self.dict_proton = {}
 
@@ -37,11 +38,16 @@ class Subject(object):
             twix_file_location = io_utils.get_dis_twix_files(str(self.config.data_dir))
             if self.config.multi_echo == "auto":
                 self.config.multi_echo = io_utils.auto_select_gx_protocol(twix_obj=mapvbvd.mapVBVD(twix_file_location))
-            self.dict_dis = io_utils.read_dis_twix(twix_file_location, self.config)
-            self.dict_dis[constants.IOFields.SUBJECT_ID] = self.config.subject_id
-            self.dict_dis[constants.IOFields.GRAD_DELAY_X]= self.config.dixon.gradient_delay_x
-            self.dict_dis[constants.IOFields.GRAD_DELAY_Y]= self.config.dixon.gradient_delay_y
-            self.dict_dis[constants.IOFields.GRAD_DELAY_Z]= self.config.dixon.gradient_delay_z
+            self.dict_dis1 = io_utils.read_dis_twix(twix_file_location, 1, self.config)
+            self.dict_dis2 = io_utils.read_dis_twix(twix_file_location, 2, self.config)
+            self.dict_dis1[constants.IOFields.SUBJECT_ID] = self.config.subject_id
+            self.dict_dis1[constants.IOFields.GRAD_DELAY_X]= self.config.dixon.gradient_delay_x
+            self.dict_dis1[constants.IOFields.GRAD_DELAY_Y]= self.config.dixon.gradient_delay_y
+            self.dict_dis1[constants.IOFields.GRAD_DELAY_Z]= self.config.dixon.gradient_delay_z
+            self.dict_dis2[constants.IOFields.SUBJECT_ID] = self.config.subject_id
+            self.dict_dis2[constants.IOFields.GRAD_DELAY_X]= self.config.dixon.gradient_delay_x
+            self.dict_dis2[constants.IOFields.GRAD_DELAY_Y]= self.config.dixon.gradient_delay_y
+            self.dict_dis2[constants.IOFields.GRAD_DELAY_Z]= self.config.dixon.gradient_delay_z
 
         except:
             logging.info("Could not find/read Dixon file.")
@@ -63,7 +69,7 @@ class Subject(object):
         except:
             logging.info("Could not find/read proton file.")
 
-        if not (bool(self.dict_dis) or bool(self.dict_dyn) or bool(self.dict_proton)):
+        if not (bool(self.dict_dis1) or bool(self.dict_dis2) or bool(self.dict_dyn) or bool(self.dict_proton)):
             ValueError("Could not read/find twix files.")
 
     def get_trajectories(self):
@@ -72,27 +78,33 @@ class Subject(object):
         Also, calculates the scaling factor for the trajectory.
         """
         logging.info("Getting trajectories.")
-        if bool(self.dict_dis):
-            if self.config.multi_echo == "multi_echo" or self.config.multi_echo == "multi_echo_2":
-                traj = pp.prepare_traj_interleaved_multi_echo(
-                    self.dict_dis,
-                    generate_traj=True,
-                    n_echo_dis = self.dict_dis[constants.IOFields.N_ECHO_DIS],
-                    n_echo_gas = self.dict_dis[constants.IOFields.N_ECHO_GAS],
-                )
-            else:
-                traj = pp.prepare_traj_interleaved(
-                    self.dict_dis,
-                    generate_traj=True,
-                )
+        if bool(self.dict_dis1):
+            traj = pp.prepare_traj_interleaved(
+                self.dict_dis1,
+                generate_traj=True,
+            )
 
             traj_scaling_factor = traj_utils.get_scaling_factor(
                 recon_size=int(self.config.recon.recon_size),
-                n_points=self.dict_dis[constants.IOFields.N_POINTS],
+                n_points=self.dict_dis1[constants.IOFields.N_POINTS],
                 scale=True,
             )
             traj *= traj_scaling_factor
-            self.dict_dis[constants.IOFields.TRAJ] = traj
+            self.dict_dis1[constants.IOFields.TRAJ] = traj
+
+        if bool(self.dict_dis2):
+            traj = pp.prepare_traj_interleaved(
+                self.dict_dis2,
+                generate_traj=True,
+            )
+
+            traj_scaling_factor = traj_utils.get_scaling_factor(
+                recon_size=int(self.config.recon.recon_size),
+                n_points=self.dict_dis2[constants.IOFields.N_POINTS],
+                scale=True,
+            )
+            traj *= traj_scaling_factor
+            self.dict_dis2[constants.IOFields.TRAJ] = traj
 
         if bool(self.dict_proton):
             traj = pp.prepare_traj(self.dict_proton)
@@ -102,10 +114,17 @@ class Subject(object):
     def write_all_mrd_files(self):
         """Write MRD files."""
         logging.info("Writing MRD files.")
-        if bool(self.dict_dis):
+        if bool(self.dict_dis1):
             io_utils.write_mrd_file(
-                path=os.path.join("tmp", "{}_dixon.h5".format(self.config.subject_id)),
-                data_dict=self.dict_dis,
+                path=os.path.join("tmp", "{}_dixonTE90.h5".format(self.config.subject_id)),
+                data_dict=self.dict_dis1,
+                scan_type="dixon",
+                demographics_flag=self.config.patient_demographics,
+            )
+        if bool(self.dict_dis2):
+            io_utils.write_mrd_file(
+                path=os.path.join("tmp", "{}_dixonLongTE.h5".format(self.config.subject_id)),
+                data_dict=self.dict_dis2,
                 scan_type="dixon",
                 demographics_flag=self.config.patient_demographics,
             )

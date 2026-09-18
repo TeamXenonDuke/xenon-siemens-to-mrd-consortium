@@ -270,6 +270,7 @@ def read_dyn_twix(
 
 def read_dis_twix(
         path: str, 
+        kernelset: int,
         config: Optional[config_dict.ConfigDict] = None
     ) -> Dict[str, Any]:
     """Read dixon disssolved phase imaging twix file.
@@ -289,15 +290,13 @@ def read_dis_twix(
     twix_obj.image.flagRemoveOS = False
     
     # read gx data
-    if config.multi_echo == "multi_echo_2":
-        data_dict = twix_utils.get_gx_data_multi_echo_2(twix_obj=twix_obj)
-    elif config.multi_echo == "multi_echo":
-        data_dict = twix_utils.get_gx_data_multi_echo(twix_obj=twix_obj)
-    elif "single_echo" in config.multi_echo:
-        data_dict = twix_utils.get_gx_data(twix_obj=twix_obj,multi_echo_flag=config.multi_echo)
-    else:
-        raise ValueError("Could not read gas exchange data.")
-    filename = os.path.basename(path)
+    data_dict = twix_utils.get_gx_data_dixon8k(twix_obj=twix_obj, kernelset=kernelset)
+
+    # get TE
+    if kernelset == 1:
+        te = twix_obj.hdr.Phoenix[("alTE", "4")] * 1e-3
+    elif kernelset == 2:
+        te = twix_obj.hdr.Phoenix[("alTE", "12")] * 1e-3
 
     return {
         constants.IOFields.CONTRAST_LABELS: data_dict[
@@ -310,23 +309,21 @@ def read_dis_twix(
         constants.IOFields.BONUS_SPECTRA_LABELS: data_dict[
             constants.IOFields.BONUS_SPECTRA_LABELS
         ],
-        constants.IOFields.SAMPLE_TIME: twix_utils.get_dwell_time(twix_obj),
-        constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA: twix_utils.get_dwell_time_bonus_spectra(twix_obj,config.multi_echo),
-        constants.IOFields.FA_DIS: twix_utils.get_flipangle_dissolved(twix_obj,config.multi_echo),
-        constants.IOFields.FA_GAS: twix_utils.get_flipangle_gas(twix_obj,config.multi_echo),
+        constants.IOFields.SAMPLE_TIME: float(twix_obj.hdr.Phoenix[("sRXSPEC", "alDwellTime", "4")]) * 1e-3,
+        constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA: float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "14")]) * 0.5,
+        constants.IOFields.FA_DIS: float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "2")]),
+        constants.IOFields.FA_GAS: float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "1")]),
         constants.IOFields.FIELD_STRENGTH: twix_utils.get_field_strength(twix_obj),
         constants.IOFields.FIDS: data_dict[constants.IOFields.FIDS],
         constants.IOFields.FIDS_DIS: data_dict[constants.IOFields.FIDS_DIS],
         constants.IOFields.FIDS_GAS: data_dict[constants.IOFields.FIDS_GAS],
         constants.IOFields.FOV: twix_utils.get_FOV(twix_obj),
         constants.IOFields.XE_CENTER_FREQUENCY: twix_utils.get_center_freq(twix_obj),
-        constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY: twix_utils.get_excitation_freq(
-            twix_obj
-        ),
+        constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY: twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "18"],
         constants.IOFields.INSTITUTION: twix_utils.get_institution(twix_obj),
         constants.IOFields.N_FRAMES: data_dict[constants.IOFields.N_FRAMES],
         constants.IOFields.N_POINTS: twix_utils.get_gas_exchange_npoints(twix_obj), 
-        constants.IOFields.N_POINTS_BONUS_SPECTRA :twix_utils.get_bonus_spectra_npoints(twix_obj,config.multi_echo),
+        constants.IOFields.N_POINTS_BONUS_SPECTRA :int(twix_obj.hdr.MeasYaps[('sWipMemBlock','adFree','7')])*2,
         constants.IOFields.ORIENTATION: twix_utils.get_orientation(twix_obj),
         constants.IOFields.PROTOCOL_NAME: twix_utils.get_protocol_name(twix_obj),
         constants.IOFields.RAMP_TIME: twix_utils.get_ramp_time(twix_obj),
@@ -334,15 +331,12 @@ def read_dis_twix(
         constants.IOFields.SCAN_DATE: twix_utils.get_scan_date(twix_obj),
         constants.IOFields.SYSTEM_VENDOR: twix_utils.get_system_vendor(twix_obj),
         constants.IOFields.SOFTWARE_VERSION: twix_utils.get_software_version(twix_obj),
-        constants.IOFields.TE: twix_utils.get_TE(twix_obj,config.multi_echo),
-        constants.IOFields.TR_GAS: twix_utils.get_TR_dissolved(twix_obj),
-        constants.IOFields.TR_DIS: twix_utils.get_TR_dissolved(twix_obj),
-        constants.IOFields.BANDWIDTH: twix_utils.get_bandwidth(
-            twix_obj, data_dict, filename
-        ),
+        constants.IOFields.TE: te,
+        constants.IOFields.TR_GAS: float(twix_obj.hdr.Phoenix[("alTR", "1")]) * 1e-3,
+        constants.IOFields.TR_DIS: float(twix_obj.hdr.Phoenix[("alTR", "2")]) * 1e-3,
         constants.IOFields.N_ECHO_DIS: data_dict[constants.IOFields.N_ECHO_DIS],
         constants.IOFields.N_ECHO_GAS: data_dict[constants.IOFields.N_ECHO_GAS],
-        constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
+        constants.IOFields.PREP_PULSES: True,
         constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj, config),
         constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj, config),
         constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj, config),

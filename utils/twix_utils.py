@@ -1269,6 +1269,94 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
         constants.IOFields.N_ECHO_GAS: n_echo_gas
     }
 
+def get_gx_data_dixon8k(twix_obj: mapvbvd._attrdict.AttrDict, kernelset: int) -> Dict[str, Any]:
+    """Get the dissolved phase and gas phase FIDs from twix object.
+    Initially written for DixonXP_2501_KUMC sequence
+
+    For reconstruction, we also need important information like the gradient delay,
+    number of fids in each phase, etc. Note, this cannot be trivially read from the
+    twix object, and need to hard code some values. For example, the gradient delay
+    is slightly different depending on the scanner.
+    Args:
+        twix_obj: twix object returned from mapVBVD function
+    Returns:
+        TODO
+    """
+    
+    raw_fids = read_long_spectra_uniform(twix_obj)
+    # return only the FIDs from that kernel set
+    disspect = raw_fids[0:100, :]
+    gasspect = raw_fids[-20:, :]
+    indices = np.arange(100, 4100)
+    if kernelset == 1:
+        indices = indices[indices % 4 < 2]
+        data = raw_fids[indices, :]
+        raw_fids = np.concatenate((disspect, data, gasspect), axis=0)
+    elif kernelset == 2:
+        indices = indices[indices % 4 > 1]
+        data = raw_fids[indices, :]
+        raw_fids = np.concatenate((disspect, data, gasspect), axis=0)
+    contrast_labels = np.zeros(raw_fids.shape[0])
+    set_labels = np.zeros(raw_fids.shape[0])
+    bonus_spectra_labels = (
+        np.ones(raw_fids.shape[0]) * constants.BonusSpectraLabels.NOT_BONUS
+    )
+
+    # extract number of bonus spectra
+    bonus_number_gas = 20
+    bonus_number_dissolved = 100
+    bonus_number = bonus_number_gas + bonus_number_dissolved
+    bonus_position_dis = "before" # returns "before" or "after"
+    bonus_position_gas = "after" # returns "before" or "after"
+
+    # set bonus spectra labels
+    n_echo_dis = 1
+    n_echo_gas = 1
+    n_echoes = n_echo_dis + n_echo_gas 
+    
+    if bonus_position_dis == "before" and bonus_position_gas == "after":
+        # set bonus spectra labels
+        bonus_spectra_labels[:bonus_number_dissolved] = constants.BonusSpectraLabels.BONUS
+        bonus_spectra_labels[-bonus_number_gas:] = constants.BonusSpectraLabels.BONUS
+
+        # assign contrast labels for bonus spectra
+        contrast_labels[:bonus_number_dissolved] = constants.ContrastLabels.DISSOLVED
+        contrast_labels[-bonus_number_gas:] = constants.ContrastLabels.GAS
+
+        # assign contrast labels for main data
+        for i in range(n_echo_gas):
+            contrast_labels[bonus_number_dissolved+i:-bonus_number_gas:n_echoes] = constants.ContrastLabels.GAS
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis):
+            contrast_labels[bonus_number_dissolved+i:-bonus_number_gas:n_echoes] = constants.ContrastLabels.DISSOLVED
+
+        # assign set labels
+        set_labels[:bonus_number_dissolved] = 1
+        set_labels[-bonus_number_gas:] = 1
+        for i in range(n_echo_gas):
+            set_labels[bonus_number_dissolved+i:-bonus_number_gas:n_echoes] = i+1
+        for i in range(n_echo_gas,n_echo_gas + n_echo_dis): 
+            set_labels[bonus_number_dissolved+i:-bonus_number_gas:n_echoes] = (i-n_echo_gas) + 1
+
+    n_frames = int((raw_fids.shape[0] - bonus_number) / n_echoes)
+    data_gas = raw_fids[
+        contrast_labels == constants.ContrastLabels.GAS
+    ]
+    data_dis = raw_fids[
+        contrast_labels== constants.ContrastLabels.DISSOLVED
+    ]
+    
+    return {
+        constants.IOFields.FIDS: raw_fids,
+        constants.IOFields.FIDS_GAS: data_gas,
+        constants.IOFields.FIDS_DIS: data_dis,
+        constants.IOFields.CONTRAST_LABELS: contrast_labels,
+        constants.IOFields.SET_LABELS: set_labels,
+        constants.IOFields.BONUS_SPECTRA_LABELS: bonus_spectra_labels,
+        constants.IOFields.N_FRAMES: n_frames,
+        constants.IOFields.N_ECHO_DIS: n_echo_dis,
+        constants.IOFields.N_ECHO_GAS: n_echo_gas
+    }
+
 
 def get_ute_data(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     """Get the UTE FIDs from twix object.

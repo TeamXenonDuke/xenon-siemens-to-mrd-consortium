@@ -1287,7 +1287,7 @@ def get_gx_data_dixon8k(twix_obj: mapvbvd._attrdict.AttrDict, kernelset: int) ->
     # return only the FIDs from that kernel set
     disspect = raw_fids[0:100, :]
     gasspect = raw_fids[-20:, :]
-    indices = np.arange(100, 4100)
+    indices = np.arange(100, 2100)
     if kernelset == 1:
         indices = indices[indices % 4 < 2]
         data = raw_fids[indices, :]

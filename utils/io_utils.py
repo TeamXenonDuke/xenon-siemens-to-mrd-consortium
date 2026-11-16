@@ -192,6 +192,8 @@ def auto_select_gx_protocol(twix_obj: mapvbvd._attrdict.AttrDict) -> str:
     number_of_alTR = twix_utils.get_alTR(twix_obj);
     if number_of_alTR == 0:
         raise ValueError("Cannot automatically select GX protocol. Require manual selection")
+    elif number_of_alTR == 25:
+        return "dixon8k"
     elif number_of_alTR == 7:
         echo_number = int(twix_obj.hdr.Phoenix[("alTR","4")])
         if echo_number == 1:
@@ -295,6 +297,8 @@ def read_dis_twix(
         data_dict = twix_utils.get_gx_data_multi_echo(twix_obj=twix_obj)
     elif "single_echo" in config.multi_echo:
         data_dict = twix_utils.get_gx_data(twix_obj=twix_obj,multi_echo_flag=config.multi_echo)
+    elif config.multi_echo == "dixon8k":
+        data_dict = twix_utils.get_gx_data_dixon8k(twix_obj=twix_obj)
     else:
         raise ValueError("Could not read gas exchange data.")
     filename = os.path.basename(path)

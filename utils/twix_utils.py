@@ -182,7 +182,7 @@ def get_dwell_time_bonus_spectra(twix_obj: mapvbvd._attrdict.AttrDict, multi_ech
 
     if (multi_echo_flag == "dixon8k"):
             try:
-                return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "8")]) * 0.5
+                return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "14")]) * 0.5
             except:
                 pass
     raise ValueError("Could not find dwell time from twix object")

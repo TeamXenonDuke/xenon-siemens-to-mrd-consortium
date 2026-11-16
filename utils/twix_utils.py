@@ -330,7 +330,7 @@ def get_ramp_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
 
     return max(100, ramp_time) if ramp_time < 100 else ramp_time
     
-def get_prep_pulses(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str) -> bool:
+def get_prep_pulses(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> bool:
     """Indicates the use of prep pulses prior to data acquisition.
     
     Returns false by default.
@@ -669,7 +669,7 @@ def get_bonus_number_dissolved(
     elif multi_echo_flag == "multi_echo_2" or multi_echo_flag == "single_echo_2":
         bonus_number_dissolved = int(twix_obj.hdr.MeasYaps[("sWipMemBlock","adFree","3")])
     elif multi_echo_flag == "dixon8k":
-        bonus_number_gas = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "3")])
+        bonus_number_dissolved = int(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "3")])
     else:
         raise ValueError("Unable to extract number of dissolved bonus spectra.")
     
@@ -1296,12 +1296,6 @@ def get_gx_data_multi_echo_2(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, 
 
 def get_gx_data_dixon8k(twix_obj: mapvbvd._attrdict.AttrDict) -> Dict[str, Any]:
     """Get the dissolved phase and gas phase FIDs from twix object.
-    Initially written for DixonXP_2501_KUMC sequence
-
-    For reconstruction, we also need important information like the gradient delay,
-    number of fids in each phase, etc. Note, this cannot be trivially read from the
-    twix object, and need to hard code some values. For example, the gradient delay
-    is slightly different depending on the scanner.
     Args:
         twix_obj: twix object returned from mapVBVD function
     Returns:

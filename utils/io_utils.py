@@ -346,7 +346,7 @@ def read_dis_twix(
         ),
         constants.IOFields.N_ECHO_DIS: data_dict[constants.IOFields.N_ECHO_DIS],
         constants.IOFields.N_ECHO_GAS: data_dict[constants.IOFields.N_ECHO_GAS],
-        constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj),
+        constants.IOFields.PREP_PULSES: twix_utils.get_prep_pulses(twix_obj, config.multi_echo),
         constants.IOFields.PATIENT_BIRTHDAY: twix_utils.get_patient_birthday(twix_obj, config),
         constants.IOFields.PATIENT_HEIGHT: twix_utils.get_patient_height(twix_obj, config),
         constants.IOFields.PATIENT_SEX: twix_utils.get_patient_sex(twix_obj, config),

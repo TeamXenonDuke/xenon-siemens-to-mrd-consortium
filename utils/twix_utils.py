@@ -145,7 +145,7 @@ def get_dwell_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
         dwell time in us
     """
     try:
-        return float(twix_obj.hdr.Phoenix[("sRXSPEC", "alDwellTime", "0")]) * 1e-3
+        return float(twix_obj.hdr.Phoenix[("sRXSPEC", "alDwellTime", "4")]) * 1e-3
     except:
         pass
     try:
@@ -179,6 +179,12 @@ def get_dwell_time_bonus_spectra(twix_obj: mapvbvd._attrdict.AttrDict, multi_ech
             return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")])  #dwell time in us, UAV don't need division by 2
         except:
             pass
+
+    if (multi_echo_flag == "dixon8k"):
+            try:
+                return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "8")]) * 0.5
+            except:
+                pass
     raise ValueError("Could not find dwell time from twix object")
 
 
@@ -324,7 +330,7 @@ def get_ramp_time(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
 
     return max(100, ramp_time) if ramp_time < 100 else ramp_time
     
-def get_prep_pulses(twix_obj: mapvbvd._attrdict.AttrDict) -> bool:
+def get_prep_pulses(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str) -> bool:
     """Indicates the use of prep pulses prior to data acquisition.
     
     Returns false by default.
@@ -333,12 +339,18 @@ def get_prep_pulses(twix_obj: mapvbvd._attrdict.AttrDict) -> bool:
     	twix_obj: twix object returned from mapVBVD function.
     Returns:
     	flag indicating prep pulses were used
-    """
+    """     
     try:
-        if twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "15"] > 0:
-            return True
+        if multi_echo_flag == "dixon8k":
+            if twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "12"] > 0:
+                return True
+            else:
+                return False
         else:
-            return False
+            if twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "15"] > 0:
+                return True
+            else:
+                return False
     except:
     	return False
 
@@ -407,6 +419,8 @@ def get_TE(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_
             ]
     elif multi_echo_flag == "multi_echo":
         return [twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3, twix_obj.hdr.Phoenix[("alTE", "1")] * 1e-3]
+    elif multi_echo_flag == "dixon8k":
+        return twix_obj.hdr.Phoenix[("alTE", "4")] * 1e-3
     elif "single_echo" in multi_echo_flag:
         return twix_obj.hdr.Phoenix[("alTE", "0")] * 1e-3
     else:
@@ -423,20 +437,16 @@ def get_flipangle_dissolved(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_fla
         flip angle in degrees
     """
 
-    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo" or multi_echo_flag == "single_echo_2":
-        try:
-            return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "2")])
-        except:
-            raise ValueError("Unable to find dissolved-phase flip angle in twix object.")
-
-    elif multi_echo_flag == "single_echo":
+    if multi_echo_flag == "single_echo":
         try:
             return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "1")])
         except:
             raise ValueError("Unable to find dissolved-phase flip angle in twix object.")
-        
     else:
-        raise ValueError("Unable to find dissolved-phase flip angle in twix object.")
+        try:
+            return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "2")])
+        except:
+            raise ValueError("Unable to find dissolved-phase flip angle in twix object.")
 
 
 def get_flipangle_gas(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> float:
@@ -448,12 +458,7 @@ def get_flipangle_gas(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str
     Returns:
         flip angle in degrees. Returns 0.5 degrees if not found.
     """
-    if multi_echo_flag == "multi_echo_2" or multi_echo_flag == "multi_echo" or multi_echo_flag == "single_echo_2":
-        try:
-            return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "1")])
-        except:
-            raise ValueError("Unable to find gas-phase flip angle in twix object.")
-    else:
+    if multi_echo_flag == "single_echo":
         try:
             return float(twix_obj.hdr.Meas["adFlipAngleDegree"].split(" ")[0])
         except:
@@ -471,8 +476,14 @@ def get_flipangle_gas(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str
             return float(twix_obj.hdr.MeasYaps[("sWiPMemBlock", "adFree", "5")])
         except:
             pass
-        logging.info("Returning default flip angle of 0.5 degrees.")
-        return 0.5
+    else:
+        try:
+            return float(twix_obj.hdr.MeasYaps[("adFlipAngleDegree", "1")])
+        except:
+            pass
+
+    logging.info("Returning default flip angle of 0.5 degrees.")
+    return 0.5
 
 
 def get_flipangle_proton(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
@@ -774,7 +785,7 @@ def get_bonus_spectra_npoints(twix_obj, multi_echo_flag: str = "single_echo"):
     # Direct access with tuple path keys
     yaps = twix_obj.hdr.MeasYaps
 
-    if multi_echo_flag != "single_echo_2" and multi_echo_flag != "multi_echo_2":
+    if multi_echo_flag != "single_echo_2" and multi_echo_flag != "multi_echo_2" and multi_echo_flag != "dixon8k":
         if ('sWipMemBlock','adFree','8') in yaps:
             spectReso   = int(yaps[('sWipMemBlock','adFree','8')])   # MATLAB {9}
 

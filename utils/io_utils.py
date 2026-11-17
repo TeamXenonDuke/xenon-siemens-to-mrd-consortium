@@ -289,7 +289,7 @@ def read_dis_twix(
     twix_obj.image.squeeze = True
     twix_obj.image.flagIgnoreSeg = True
     twix_obj.image.flagRemoveOS = False
-    
+
     # read gx data
     if config.multi_echo == "multi_echo_2":
         data_dict = twix_utils.get_gx_data_multi_echo_2(twix_obj=twix_obj)
@@ -325,7 +325,7 @@ def read_dis_twix(
         constants.IOFields.FOV: twix_utils.get_FOV(twix_obj),
         constants.IOFields.XE_CENTER_FREQUENCY: twix_utils.get_center_freq(twix_obj),
         constants.IOFields.XE_DISSOLVED_OFFSET_FREQUENCY: twix_utils.get_excitation_freq(
-            twix_obj
+            twix_obj,config.multi_echo
         ),
         constants.IOFields.INSTITUTION: twix_utils.get_institution(twix_obj),
         constants.IOFields.N_FRAMES: data_dict[constants.IOFields.N_FRAMES],

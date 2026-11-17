@@ -267,7 +267,7 @@ def get_center_freq(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     raise ValueError("Could not find center frequency (MHz) from twix object")
 
 
-def get_excitation_freq(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
+def get_excitation_freq(twix_obj: mapvbvd._attrdict.AttrDict, multi_echo_flag: str = "single_echo") -> float:
     """Get the excitation frequency in Hz.
 
     Args:
@@ -277,7 +277,10 @@ def get_excitation_freq(twix_obj: mapvbvd._attrdict.AttrDict) -> float:
     """
 
     try:
-        return twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "4"]
+        if multi_echo_flag == "dixon8k":
+            return twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "18"]
+        else:
+            return twix_obj.hdr.Phoenix["sWipMemBlock", "alFree", "4"]
     except:
         try:
             return twix_obj.hdr.MeasYaps[("sWiPMemBlock", "adFree", "8")]

@@ -163,9 +163,16 @@ def write_acquisition_data(path: str, data_dict: Dict[str, Any]):
             acquisition.resize(n_points_writing, 1)
             acquisition.data[:] = data_dict[constants.IOFields.FIDS][acquisition_num, :n_points_writing]
 
+        elif (int(data_dict[constants.IOFields.CONTRAST_LABELS][acquisition_num])==1):
+            n_points_writing= data_dict[constants.IOFields.N_POINTS_BONUS_SPECTRA];
+            acquisition_header.sample_time_us = data_dict[constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA][0]
+            acquisition_header.number_of_samples = n_points_writing 
+            acquisition.resize(n_points_writing, 1)
+            acquisition.data[:]= data_dict[constants.IOFields.FIDS][acquisition_num, :n_points_writing ]
+
         else:
             n_points_writing= data_dict[constants.IOFields.N_POINTS_BONUS_SPECTRA];
-            acquisition_header.sample_time_us = data_dict[constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA]
+            acquisition_header.sample_time_us = data_dict[constants.IOFields.SAMPLE_TIME_BONUS_SPECTRA][1]
             acquisition_header.number_of_samples = n_points_writing 
             acquisition.resize(n_points_writing, 1)
             acquisition.data[:]= data_dict[constants.IOFields.FIDS][acquisition_num, :n_points_writing ]

@@ -165,24 +165,32 @@ def get_dwell_time_bonus_spectra(twix_obj: mapvbvd._attrdict.AttrDict, multi_ech
     """
     if (multi_echo_flag == "single_echo" or multi_echo_flag == "multi_echo"):
         try:
-            return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")]) * 0.5  #dwell time in us, divide 2 bc oversampling
+            sample_time_gas = float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")]) * 0.5  #dwell time in us, divide 2 bc oversampling
+            sample_time_dis = float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")]) * 0.5
+            return sample_time_gas, sample_time_dis
         except:
             pass
     if (multi_echo_flag == "multi_echo_2"): 
         try:
-            return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "14")]) * 0.5  #dwell time in us, divide 2 bc oversampling
+            sample_time_gas = float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "14")]) * 0.5
+            sample_time_dis = float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "8")]) * 0.5
+            return sample_time_gas, sample_time_dis
         except:
             pass
 
     if (multi_echo_flag == "single_echo_2"):
         try:
-            return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")])  #dwell time in us, UAV don't need division by 2
+            sample_time_gas = float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")])  # UVA doesn't need division by 2
+            sample_time_dis = float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "9")])
+            return sample_time_gas, sample_time_dis
         except:
             pass
 
     if (multi_echo_flag == "dixon8k"):
             try:
-                return float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "14")]) * 0.5
+                sample_time_gas = float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "14")]) * 0.5
+                sample_time_dis = float(twix_obj.hdr.MeasYaps[("sWipMemBlock", "adFree", "8")]) * 0.5
+                return sample_time_gas, sample_time_dis
             except:
                 pass
     raise ValueError("Could not find dwell time from twix object")

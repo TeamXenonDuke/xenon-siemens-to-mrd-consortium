@@ -35,7 +35,7 @@ class Config(config_dict.ConfigDict):
         self.patient_demographics = False
 
         # Manual demographics input (optional), default values prompt usage of twix header
-        self.patient_height_mm = np.nan
+        self.patient_height_mm = np.nan # e.g., 1750.0 (mm, not cm)
         self.patient_weight_kg = np.nan
         self.patient_age = np.nan
         self.patient_sex = constants.PatientSexKey.NONE.value
